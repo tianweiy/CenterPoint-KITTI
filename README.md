@@ -1,7 +1,8 @@
-# CenterPoint 
+# CenterPoint
 
-This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScenes and Waymo, please refer to the [original repo](https://github.com/tianweiy/CenterPoint). We provide two configs, [centerpoint.yaml](tools/cfgs/kitti_models/centerpoint.yaml) for the vanilla centerpoint model and [centerpoint_rcnn.yaml](tools/cfgs/kitti_models/centerpoint_rcnn.yaml) which combines centerpoint with PVRCNN. 
+3D Object Detection and Tracking using center points in the bird-eye view.
 
+<p align="center"> <img src='docs/teaser.png' align="center" height="230px"> </p>
 
 > [**Center-based 3D Object Detection and Tracking**](https://arxiv.org/abs/2006.11275),            
 > Tianwei Yin, Xingyi Zhou, Philipp Kr&auml;henb&uuml;hl,        
@@ -16,6 +17,7 @@ This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScen
       year={2021},
     }
 
+This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScenes and Waymo, please refer to the [original repo](https://github.com/tianweiy/CenterPoint). We provide two configs, [centerpoint.yaml](tools/cfgs/kitti_models/centerpoint.yaml) for the vanilla centerpoint model and [centerpoint_rcnn.yaml](tools/cfgs/kitti_models/centerpoint_rcnn.yaml) which combines centerpoint with PVRCNN. 
 
 
 ## Acknowledgement
