@@ -14,7 +14,7 @@ NOTE: Please re-install `pcdet v0.3` by running `python setup.py develop` even i
 
 a. Clone this repository.
 ```shell
-git clone https://github.com/open-mmlab/CenterPoint-KITTI.git
+git clone https://github.com/tianweiy/CenterPoint-KITTI.git
 ```
 
 b. Install the dependent libraries as follows:
