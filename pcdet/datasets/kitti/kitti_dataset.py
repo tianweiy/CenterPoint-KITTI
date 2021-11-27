@@ -10,7 +10,7 @@ from ..dataset import DatasetTemplate
 
 
 class KittiDataset(DatasetTemplate):
-    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None):
+    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, partial_set_size=None):
         """
         Args:
             root_path:
@@ -29,13 +29,14 @@ class KittiDataset(DatasetTemplate):
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
 
         self.kitti_infos = []
-        self.include_kitti_data(self.mode)
+        self.include_kitti_data(self.mode, partial_set_size=partial_set_size)
 
-    def include_kitti_data(self, mode):
+    def include_kitti_data(self, mode, partial_set_size=None):
         if self.logger is not None:
             self.logger.info('Loading KITTI dataset')
         kitti_infos = []
 
+        partial_set_size = 200
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
             if not info_path.exists():
@@ -44,8 +45,11 @@ class KittiDataset(DatasetTemplate):
                 infos = pickle.load(f)
                 kitti_infos.extend(infos)
 
-        self.kitti_infos.extend(kitti_infos)
+            if partial_set_size and len(kitti_infos) > partial_set_size:
+                kitti_infos = kitti_infos[:partial_set_size]
+                break
 
+        self.kitti_infos.extend(kitti_infos)
         if self.logger is not None:
             self.logger.info('Total samples for KITTI dataset: %d' % (len(kitti_infos)))
 
@@ -58,6 +62,8 @@ class KittiDataset(DatasetTemplate):
 
         split_dir = self.root_path / 'ImageSets' / (self.split + '.txt')
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
+        # l = len(self.sample_id_list) * 0.1
+        # self.sample_id_list = self.sample_id_list[:int(l)]
 
     def get_lidar(self, idx):
         lidar_file = self.root_split_path / 'velodyne' / ('%s.bin' % idx)
