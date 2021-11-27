@@ -1,0 +1,28 @@
+alias gs="git status"
+alias gsh="git status show"
+alias gd="git diff"
+alias gc="git commit -m"
+alias gpush="git push origin HEAD"
+alias ga="git add"
+alias br="code ~/.bashrc"
+alias sbr="source ~/.bashrc"
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+function vncnewthing() {
+  host myip.opendns.com resolver1.opendns.com
+  vnc -kill :1
+  vnc -kill :2
+  vnc -kill :3
+  vncnew
+  export DISPLAY=:1
+}
+
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+alias vnckill="vnc -kill :"
+alias vncn=vncnewthing
+
+alias cac="source /opt/conda/bin/activate cpkitti1"
+alias ll="ls -l -hs"
