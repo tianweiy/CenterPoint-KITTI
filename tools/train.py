@@ -41,7 +41,7 @@ def parse_config():
     parser.add_argument('--max_waiting_mins', type=int, default=0, help='max waiting minutes')
     parser.add_argument('--start_epoch', type=int, default=0, help='')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
-    parser.add_argument('--set_size', type=int, default=None, help='Set number of samples from set')
+    parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
 
     args = parser.parse_args()
 
@@ -51,16 +51,14 @@ def parse_config():
 
     if args.set_cfgs is not None:
         cfg_from_list(args.set_cfgs, cfg)
-
     return args, cfg
-#
 
 def main():
-    t = torch.cuda.get_device_properties(0).total_memory
-    r = torch.cuda.memory_reserved(0)
-    a = torch.cuda.memory_allocated(0)
-    f = r-a  # free inside reserved    
-    torch.cuda.empty_cache()
+    # t = torch.cuda.get_device_properties(0).total_memory
+    # r = torch.cuda.memory_reserved(0)
+    # a = torch.cuda.memory_allocated(0)
+    # f = r-a  # free inside reserved    
+    # torch.cuda.empty_cache()
     args, cfg = parse_config()
     if args.launcher == 'none':
         dist_train = False
@@ -133,7 +131,7 @@ def main():
 
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
-        last_epoch = start_epoch + 1
+        last_epoch = 1 #start_epoch + 1
     else:
         ckpt_list = glob.glob(str(ckpt_dir / '*checkpoint_epoch_*.pth'))
         if len(ckpt_list) > 0:

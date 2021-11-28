@@ -24,7 +24,6 @@ class KittiDataset(DatasetTemplate):
         )
         self.split = self.dataset_cfg.DATA_SPLIT[self.mode]
         self.root_split_path = self.root_path / ('training' if self.split != 'test' else 'testing')
-        print(self.root_path)
 
         split_dir = self.root_path / 'ImageSets' / (self.split + '.txt')
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
@@ -44,23 +43,19 @@ class KittiDataset(DatasetTemplate):
             with open(info_path, 'rb') as f:
                 infos = pickle.load(f)
                 kitti_infos.extend(infos)
-        
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$len", kitti_infos[0]["annos"])
-        # for i, x in enumerate(kitti_infos):
-        #     print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$len", x["image"])
-        #     if i == 10:
-        #         break
             
-        exit(1)
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$per", set_size_percentage)
-        if set_size_percentage and 0 < set_size_percentage <= 100:
+        if set_size_percentage:
+            if not (0 < set_size_percentage <= 100):
+                raise AssertionError("percantage value should be between 0 and 100")
             partial_amount = int(len(kitti_infos) * set_size_percentage * 0.01)
             kitti_infos = kitti_infos[:partial_amount]
-            
+            if self.logger is not None:
+                self.logger.info('Frame numbers in the dataset:', list(map(lambda x: x["point_cloud"]["lidar_idx"], kitti_infos)))
 
         self.kitti_infos.extend(kitti_infos)
         if self.logger is not None:
             self.logger.info('Total samples for KITTI dataset: %d' % (len(kitti_infos)))
+        # exit(1)
 
     def set_split(self, split):
         super().__init__(

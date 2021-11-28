@@ -24,7 +24,6 @@ class DemoDataset(DatasetTemplate):
             class_names:
             training:
             logger:
-            asdasd
         """
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
@@ -55,7 +54,6 @@ class DemoDataset(DatasetTemplate):
         data_dict = self.prepare_data(data_dict=input_dict)
         return data_dict
 
-
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
     parser.add_argument('--cfg_file', type=str, default='cfgs/kitti_models/second.yaml',
@@ -64,18 +62,16 @@ def parse_config():
                         help='specify the point cloud data file or directory')
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
-    parser.add_argument('--file_origin', type=str, default='test', help='Take demo sample from {test, train}')
+    parser.add_argument('--sample_folder', type=str, default='test', help='Take demo sample from {test, train}')
     args = parser.parse_args()
 
     cfg_from_yaml_file(args.cfg_file, cfg)
     return args, cfg
 
-
 def main():
     args, cfg = parse_config()
-    kitti_infos = include_kitti_data(cfg, args.file_origin)
+    kitti_infos = include_kitti_data(cfg, args.sample_folder)
     gt_instance = list(filter(lambda x :x["image"]["image_idx"] == re.findall(f"[0-9]+", args.data_path)[-1], kitti_infos))[0]
-    print(gt_instance)
     logger = common_utils.create_logger()
     logger.info('-----------------Quick Demo of CenterPoint----------------------')
     demo_dataset = DemoDataset(
@@ -99,15 +95,12 @@ def main():
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             )
             mlab.show(stop=True)
-    
-    
 
     logger.info('Demo done.')
 
 def include_kitti_data(dataset_cfg, mode, set_size_percentage=None):
     kitti_infos = []
     for info_path in dataset_cfg.DATA_CONFIG["INFO_PATH"][mode]:
-        print(info_path)
         info_path =  Path(dataset_cfg.DATA_CONFIG.DATA_PATH) / info_path
         if not info_path.exists():
             continue
