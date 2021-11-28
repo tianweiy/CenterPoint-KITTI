@@ -1,10 +1,12 @@
 import argparse
 import glob
+from operator import gt
 from pathlib import Path
-
+import pickle
 import mayavi.mlab as mlab
 import numpy as np
 import torch
+import re
 
 from pcdet.config import cfg, cfg_from_yaml_file
 from pcdet.datasets import DatasetTemplate
@@ -22,6 +24,7 @@ class DemoDataset(DatasetTemplate):
             class_names:
             training:
             logger:
+            asdasd
         """
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
@@ -61,18 +64,20 @@ def parse_config():
                         help='specify the point cloud data file or directory')
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
-
+    parser.add_argument('--file_origin', type=str, default='test', help='Take demo sample from {test, train}')
     args = parser.parse_args()
 
     cfg_from_yaml_file(args.cfg_file, cfg)
-
     return args, cfg
 
 
 def main():
     args, cfg = parse_config()
+    kitti_infos = include_kitti_data(cfg, args.file_origin)
+    gt_instance = list(filter(lambda x :x["image"]["image_idx"] == re.findall(f"[0-9]+", args.data_path)[-1], kitti_infos))[0]
+    print(gt_instance)
     logger = common_utils.create_logger()
-    logger.info('-----------------Quick Demo of OpenPCDet-------------------------')
+    logger.info('-----------------Quick Demo of CenterPoint----------------------')
     demo_dataset = DemoDataset(
         dataset_cfg=cfg.DATA_CONFIG, class_names=cfg.CLASS_NAMES, training=False,
         root_path=Path(args.data_path), ext=args.ext, logger=logger
@@ -89,15 +94,33 @@ def main():
             data_dict = demo_dataset.collate_batch([data_dict])
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
-
             V.draw_scenes(
-                points=data_dict['points'][:, 1:], ref_boxes=pred_dicts[0]['pred_boxes'],
+                points=data_dict['points'][:, 1:], gt_boxes= gt_instance["annos"]["gt_boxes_lidar"], ref_boxes=pred_dicts[0]['pred_boxes'],
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             )
             mlab.show(stop=True)
+    
+    
 
     logger.info('Demo done.')
 
+def include_kitti_data(dataset_cfg, mode, set_size_percentage=None):
+    kitti_infos = []
+    for info_path in dataset_cfg.DATA_CONFIG["INFO_PATH"][mode]:
+        print(info_path)
+        info_path =  Path(dataset_cfg.DATA_CONFIG.DATA_PATH) / info_path
+        if not info_path.exists():
+            continue
+        with open(info_path, 'rb') as f:
+            infos = pickle.load(f)
+            kitti_infos.extend(infos)
+
+    return kitti_infos
 
 if __name__ == '__main__':
+    
     main()
+
+
+
+

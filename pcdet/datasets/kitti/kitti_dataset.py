@@ -10,7 +10,7 @@ from ..dataset import DatasetTemplate
 
 
 class KittiDataset(DatasetTemplate):
-    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, partial_set_size=None):
+    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, **kwargs):
         """
         Args:
             root_path:
@@ -24,19 +24,19 @@ class KittiDataset(DatasetTemplate):
         )
         self.split = self.dataset_cfg.DATA_SPLIT[self.mode]
         self.root_split_path = self.root_path / ('training' if self.split != 'test' else 'testing')
+        print(self.root_path)
 
         split_dir = self.root_path / 'ImageSets' / (self.split + '.txt')
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
 
         self.kitti_infos = []
-        self.include_kitti_data(self.mode, partial_set_size=partial_set_size)
+        self.include_kitti_data(self.mode, set_size_percentage=kwargs.get("set_size_percentage", None))
 
-    def include_kitti_data(self, mode, partial_set_size=None):
+    def include_kitti_data(self, mode, set_size_percentage=None):
         if self.logger is not None:
             self.logger.info('Loading KITTI dataset')
         kitti_infos = []
 
-        partial_set_size = 200
         for info_path in self.dataset_cfg.INFO_PATH[mode]:
             info_path = self.root_path / info_path
             if not info_path.exists():
@@ -44,10 +44,19 @@ class KittiDataset(DatasetTemplate):
             with open(info_path, 'rb') as f:
                 infos = pickle.load(f)
                 kitti_infos.extend(infos)
-
-            if partial_set_size and len(kitti_infos) > partial_set_size:
-                kitti_infos = kitti_infos[:partial_set_size]
-                break
+        
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$len", kitti_infos[0]["annos"])
+        # for i, x in enumerate(kitti_infos):
+        #     print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$len", x["image"])
+        #     if i == 10:
+        #         break
+            
+        exit(1)
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$per", set_size_percentage)
+        if set_size_percentage and 0 < set_size_percentage <= 100:
+            partial_amount = int(len(kitti_infos) * set_size_percentage * 0.01)
+            kitti_infos = kitti_infos[:partial_amount]
+            
 
         self.kitti_infos.extend(kitti_infos)
         if self.logger is not None:
@@ -62,8 +71,6 @@ class KittiDataset(DatasetTemplate):
 
         split_dir = self.root_path / 'ImageSets' / (self.split + '.txt')
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
-        # l = len(self.sample_id_list) * 0.1
-        # self.sample_id_list = self.sample_id_list[:int(l)]
 
     def get_lidar(self, idx):
         lidar_file = self.root_split_path / 'velodyne' / ('%s.bin' % idx)
