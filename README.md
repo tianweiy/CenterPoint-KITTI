@@ -23,3 +23,7 @@ This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScen
 ## Acknowledgement
 
 Our code is based on [OpenPCDet](https://github.com/open-mmlab/OpenPCDet). Some util files are copied from [mmdetection](https://github.com/open-mmlab/mmdetection) and [mmdetection3d](https://github.com/open-mmlab/mmdetection3d). Thanks OpenMMLab Development Team for their awesome codebases.
+
+
+Our papers:
+1) Center Point: https://arxiv.org/abs/2006.11275
