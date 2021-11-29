@@ -48,14 +48,17 @@ class KittiDataset(DatasetTemplate):
             if not (0 < set_size_percentage <= 100):
                 raise AssertionError("percantage value should be between 0 and 100")
             partial_amount = int(len(kitti_infos) * set_size_percentage * 0.01)
-            kitti_infos = kitti_infos[:partial_amount]
-            if self.logger is not None:
-                self.logger.info('Frame numbers in the dataset:', list(map(lambda x: x["point_cloud"]["lidar_idx"], kitti_infos)))
+            indices = np.random.choice(np.random.permutation(np.arange(len(kitti_infos))), partial_amount)
+            import timeit
+            s = timeit.timeit()
+            kitti_infos = [kitti_infos[i] for i in indices] # list(map(kitti_infos.__getitem__, indices))
+            # if self.logger is not None:
+                # self.logger.info('Frame numbers in the dataset:', list(map(lambda x: x["point_cloud"]["lidar_idx"], kitti_infos)))
 
         self.kitti_infos.extend(kitti_infos)
         if self.logger is not None:
             self.logger.info('Total samples for KITTI dataset: %d' % (len(kitti_infos)))
-        # exit(1)
+
 
     def set_split(self, split):
         super().__init__(

@@ -98,7 +98,10 @@ def main():
 
     logger.info('Demo done.')
 
-def include_kitti_data(dataset_cfg, mode, set_size_percentage=None):
+def include_kitti_data(dataset_cfg, mode):
+    """
+    Extracts the scenes and images info from the .pkl files inti a dictionary that holds the gt_boxes, predicted_boxes, etc.
+    """
     kitti_infos = []
     for info_path in dataset_cfg.DATA_CONFIG["INFO_PATH"][mode]:
         info_path =  Path(dataset_cfg.DATA_CONFIG.DATA_PATH) / info_path
