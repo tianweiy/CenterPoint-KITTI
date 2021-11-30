@@ -27,12 +27,22 @@ alias vncn=vncnewthing
 alias cac="source /opt/conda/bin/activate cpkitti1"
 alias ll="ls -l -hs"
 
+alias permission="sudo chmod -R 777 /home/koraykoca34"br
+
 # Centerpoint aliases:
-alias train="python /home/koraykoca34/CenterPoint-KITTI/tools/train.py --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml"
-alias demo="python demo.py --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml \
+alias train="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python /home/koraykoca34/CenterPoint-KITTI/tools/train.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml"
+alias demo="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python demo.py --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml \
     --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth \
-    --data_path /home/koraykoca34/CenterPoint-KITTI/data/kitti/training/velodyne/000008.bin"
+    --data_path /home/koraykoca34/CenterPoint-KITTI/data/kitti/training/velodyne/000001.bin"
 alias testcp="cac && \
     cd /home/koraykoca34/CenterPoint-KITTI/tools &&  \
     python /home/koraykoca34/CenterPoint-KITTI/tools/test.py \
     --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth"
+
+# --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth \
+# --ckpt /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/checkpoint_epoch_51.pth \
