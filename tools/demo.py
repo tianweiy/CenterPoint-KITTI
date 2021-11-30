@@ -71,7 +71,8 @@ def parse_config():
 def main():
     args, cfg = parse_config()
     kitti_infos = include_kitti_data(cfg, args.sample_folder)
-    gt_instance = list(filter(lambda x :x["image"]["image_idx"] == re.findall(f"[0-9]+", args.data_path)[-1], kitti_infos))[0]
+    gt_instance = list(filter(lambda x :x["image"]["image_idx"] == re.findall(f"[0-9]+", args.data_path)[-1], kitti_infos))
+    gt_instance = gt_instance[0]["annos"]["gt_boxes_lidar"] if len(gt_instance) else None
     logger = common_utils.create_logger()
     logger.info('-----------------Quick Demo of CenterPoint----------------------')
     demo_dataset = DemoDataset(
@@ -91,7 +92,7 @@ def main():
             load_data_to_gpu(data_dict)
             pred_dicts, _ = model.forward(data_dict)
             V.draw_scenes(
-                points=data_dict['points'][:, 1:], gt_boxes= gt_instance["annos"]["gt_boxes_lidar"], ref_boxes=pred_dicts[0]['pred_boxes'],
+                points=data_dict['points'][:, 1:], gt_boxes=gt_instance, ref_boxes=pred_dicts[0]['pred_boxes'],
                 ref_scores=pred_dicts[0]['pred_scores'], ref_labels=pred_dicts[0]['pred_labels']
             )
             mlab.show(stop=True)

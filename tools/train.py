@@ -131,7 +131,7 @@ def main():
 
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
-        last_epoch = 1 #start_epoch + 1
+        last_epoch = start_epoch + 1
     else:
         ckpt_list = glob.glob(str(ckpt_dir / '*checkpoint_epoch_*.pth'))
         if len(ckpt_list) > 0:
