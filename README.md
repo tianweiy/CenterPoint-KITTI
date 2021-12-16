@@ -28,4 +28,4 @@ Our code is based on [OpenPCDet](https://github.com/open-mmlab/OpenPCDet). Some 
 Our papers \ Repos:
 1) Center Point: https://arxiv.org/abs/2006.11275
 2) BiFPN horizon Robotics: https://arxiv.org/abs/2006.15505
-3) BiFPN GitHub Repo: https://github.com/ViswanathaReddyGajjala/EfficientDet-Pytorch/blob/master/BiFPN.py
+3) BiFPN GitHub Repo: https://github.com/ViswanathaReddyGajjala/EfficientDet-Pytorch
