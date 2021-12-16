@@ -27,3 +27,4 @@ Our code is based on [OpenPCDet](https://github.com/open-mmlab/OpenPCDet). Some 
 
 Our papers:
 1) Center Point: https://arxiv.org/abs/2006.11275
+2) BiFPN horizon Robotics: https://arxiv.org/abs/2006.15505
