@@ -64,90 +64,7 @@ class SparseBasicBlock(spconv.SparseModule):
         out.features = self.relu(out.features)
 
         return out
-
-class BiFPN(nn.Module):
-    """
-    This is influenced by: https://github.com/ViswanathaReddyGajjala/EfficientDet-Pytorch/blob/master/BiFPN.py
-    And the paper: https://arxiv.org/abs/1911.09070
-
-    """
-    def __init__(self,  fpn_sizes):
-        super().__init__()
-
-        P3_channels, P4_channels, P5_channels = fpn_sizes
-
-        self.out_chn = 64
-        self.eps = 1e-4
-
-        # TODO: notice that batchnorm comes here AFTER Relu on the BiFPN github, in contrast to the convention.
-        block = post_act_block
-        norm_fn = partial(nn.BatchNorm1d, eps=1e-3, momentum=0.01)
-
-        # 5
-        self.p5_inp_conv = spconv.SparseSequential( 
-            block(P5_channels, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p5_out_conv = spconv.SparseSequential( 
-            block(self.out_chn, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p5_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p5_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p5_upsample  = nn.Upsample([5, 200, 176], mode='nearest')
-
-        # 4
-        self.p4_inp_conv = spconv.SparseSequential( 
-            block(P4_channels, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p4_td_conv = spconv.SparseSequential( 
-            block(self.out_chn, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p4_out_conv = spconv.SparseSequential( 
-            block(self.out_chn, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p4_td_w1 = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p4_td_w2 = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p4_out_w1 = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p4_out_w2 = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p4_out_w3 = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p4_upsample = nn.Upsample([11, 400, 352], mode='nearest')
-        self.p4_downsample = nn.MaxPool3d(kernel_size=(2,1,1))
         
-        # 3
-        self.p3_inp_conv = spconv.SparseSequential( 
-            block(P3_channels, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p3_out_conv = spconv.SparseSequential( 
-            block(self.out_chn, self.out_chn, kernel_size=3, stride=1, norm_fn=norm_fn, padding=1, indice_key='subm1'),
-        )
-        self.p3_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p3_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p3_downsample= nn.MaxPool3d(kernel_size=2)
-        
-    def forward(self, in_5, in_4, in_3):
-        # Input convs, we keep the dimensions
-        conv_5_in = self.p5_inp_conv(in_5)  # [2, 200, 176]
-        conv_4_in = self.p4_inp_conv(in_4)  # [5, 200, 176]
-        conv_3_in = self.p3_inp_conv(in_3)  # [11, 400, 352]
-
-        # intermediate convs for 3 & 4 (top --> down path)
-        conv_5_in_resized = self.p5_upsample(conv_5_in)
-        t_in = (self.p4_td_w1 * conv_4_in + self.p4_td_w2 * conv_5_in_resized ) / (self.p4_td_w1 + self.p4_td_w2 + self.eps)
-        td_4 = self.p4_td_conv(t_in)
-
-        td_4_resized = self.p4_upsample(td_4)
-        t_in = (self.p3_out_w1 * conv_3_in + self.p3_out_w2 * td_4_resized) / (self.p3_out_w1 + self.p3_out_w2 + self.eps)
-        out_3 = self.p3_out_conv(t_in)
-
-        # out convs 4 & 5 (down -- > top path)
-        out_3_resized = self.p3_downsample(out_3)
-        t_in = (self.p4_out_w1 * conv_4_in + self.p4_out_w2 * td_4 + self.p4_out_w3 * out_3_resized) / (self.p4_out_w1 + self.p4_out_w2 + self.p4_out_w3 + self.eps)
-        out_4 = self.p4_out_conv(t_in)
-
-        out_4_resized = self.p4_downsample(out_4)
-        t_in = (self.p5_out_w1 * conv_5_in + self.p5_out_w2 * out_4_resized) / (self.p5_out_w1 + self.p5_out_w2 + self.eps)
-        out_5 = self.p5_out_conv(t_in)
-
-        return out_5, out_4, out_3
         
 class VoxelBackBone8x(nn.Module):
     def __init__(self, model_cfg, input_channels, grid_size, **kwargs):
@@ -201,15 +118,11 @@ class VoxelBackBone8x(nn.Module):
             norm_fn(128),
             nn.ReLU(),
         )
+
         self.num_point_features = 128
 
         
-    def __repr__(self):
-        #super().__repr__()
-        return ('{name}({model_cfg}, in_ch={in_ch}, grid_size={grid_size},'
-                'kwargs={kwargs})'
-                .format(name=self.__class__.__name__, model_cfg=self.model_cfg, in_ch=self.input_channels, grid_size=self.sparse_shape, kwargs=self.kwargs))
-
+  
     def forward(self, batch_dict):
         """
         Args:
@@ -235,15 +148,14 @@ class VoxelBackBone8x(nn.Module):
         x_conv1 = self.conv1(x)
         x_conv2 = self.conv2(x_conv1)
         x_conv3 = self.conv3(x_conv2)
-        # print(f"xconv_3 = {x_conv3.spatial_shape}")
         x_conv4 = self.conv4(x_conv3)
-        # print(f"xconv_4 = {x_conv4.spatial_shape}")
     
 
         # for detection head
         # [200, 176, 5] -> [200, 176, 2]
         out = self.conv_out(x_conv4)
-        # print(f"out = {out.spatial_shape}")
+        # out = self.bifpn(out, x_conv4, x_conv3)
+    
 
         batch_dict.update({
             'encoded_spconv_tensor': out,
