@@ -1,12 +1,18 @@
 import numpy as np
 import torch
 import torch.nn as nn
+from .BiFPN import BiFPN, BiFPN_Network
+from torch import cat
+
+
 
 
 class BaseBEVBackbone(nn.Module):
-    def __init__(self, model_cfg, input_channels):
+    def __init__(self, model_cfg, input_channels, **kwargs):
         super().__init__()
         self.model_cfg = model_cfg
+        self.bifpn_sizes = kwargs['bifpn']
+        self.counter = 0
 
         if self.model_cfg.get('LAYER_NUMS', None) is not None:
             assert len(self.model_cfg.LAYER_NUMS) == len(self.model_cfg.LAYER_STRIDES) == len(self.model_cfg.NUM_FILTERS)
@@ -28,7 +34,7 @@ class BaseBEVBackbone(nn.Module):
         self.blocks = nn.ModuleList()
         self.deblocks = nn.ModuleList()
         for idx in range(num_levels):
-            cur_layers = [
+            cur_layers = [nn.Sequential(
                 nn.ZeroPad2d(1),
                 nn.Conv2d(
                     c_in_list[idx], num_filters[idx], kernel_size=3,
@@ -36,14 +42,16 @@ class BaseBEVBackbone(nn.Module):
                 ),
                 nn.BatchNorm2d(num_filters[idx], eps=1e-3, momentum=0.01),
                 nn.ReLU()
-            ]
+            )]
+                
             for k in range(layer_nums[idx]):
-                cur_layers.extend([
+                cur_layers.append(nn.Sequential(
                     nn.Conv2d(num_filters[idx], num_filters[idx], kernel_size=3, padding=1, bias=False),
                     nn.BatchNorm2d(num_filters[idx], eps=1e-3, momentum=0.01),
                     nn.ReLU()
-                ])
+                ))
             self.blocks.append(nn.Sequential(*cur_layers))
+            
             if len(upsample_strides) > 0:
                 stride = upsample_strides[idx]
                 if stride >= 1:
@@ -85,25 +93,52 @@ class BaseBEVBackbone(nn.Module):
                 spatial_features
         Returns:
         """
+
         spatial_features = data_dict['spatial_features']
         ups = []
-        ret_dict = {}
+        # ret_dict = {}
         x = spatial_features
+        bifpn_layers = []
         for i in range(len(self.blocks)):
-            x = self.blocks[i](x)
+            for j, layer in enumerate(self.blocks[i]):
 
-            stride = int(spatial_features.shape[2] / x.shape[2])
-            ret_dict['spatial_features_%dx' % stride] = x
-            if len(self.deblocks) > 0:
-                ups.append(self.deblocks[i](x))
-            else:
-                ups.append(x)
+                x = layer(x)
+                if i + 1 == len(self.blocks) and j > 2:
+                    bifpn_layers.append(x)
+            # stride = int(spatial_features.shape[2] / x.shape[2])
+            # ret_dict['spatial_features_%dx' % stride] = x
+            
 
+        if len(self.bifpn_sizes) > 0:
+
+            if self.counter == 0:
+                # TODO: Put BiFPN details in CFG file.
+                self.bifpn = BiFPN_Network([bifpn_layers[-1].shape[1], bifpn_layers[-2].shape[1], bifpn_layers[-3].shape[1]], out_channels=self.bifpn_sizes)
+                self.bifpn.to(self.bifpn.device)
+
+            feature_maps = self.bifpn.forward(bifpn_layers[-1], bifpn_layers[-2], bifpn_layers[-3])
+            x = cat(feature_maps, axis=1)
+            if self.counter == 0:
+                self.last_block = nn.Sequential(
+                    nn.Conv2d(x.shape[1], self.model_cfg.NUM_FILTERS, kernel_size=1),
+                    nn.BatchNorm2d(self.model_cfg.NUM_FILTERS),
+                    nn.ReLU()
+                ).to(self.bifpn.device)
+            x = self.last_block(x)
+            self.counter += 1
+
+
+        if len(self.deblocks) > 0:
+            ups.append(self.deblocks[i](x))
+        else:
+            ups.append(x)
+                   
         if len(ups) > 1:
             x = torch.cat(ups, dim=1)
         elif len(ups) == 1:
             x = ups[0]
 
+       
         if len(self.deblocks) > len(self.blocks):
             x = self.deblocks[-1](x)
 

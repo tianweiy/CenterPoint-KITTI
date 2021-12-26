@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import torch
 import torch.nn as nn
@@ -38,7 +39,7 @@ class Detector3DTemplate(nn.Module):
             'num_point_features': self.dataset.point_feature_encoder.num_point_features,
             'grid_size': self.dataset.grid_size,
             'point_cloud_range': self.dataset.point_cloud_range,
-            'voxel_size': self.dataset.voxel_size
+            'voxel_size': self.dataset.voxel_size,
         }
         for module_name in self.module_topology:
             module, model_info_dict = getattr(self, 'build_%s' % module_name)(
@@ -82,7 +83,9 @@ class Detector3DTemplate(nn.Module):
 
         map_to_bev_module = map_to_bev.__all__[self.model_cfg.MAP_TO_BEV.NAME](
             model_cfg=self.model_cfg.MAP_TO_BEV,
-            grid_size=model_info_dict['grid_size']
+            grid_size=model_info_dict['grid_size'],
+            bifpn=self.dataset.args.get('bifpn', [])
+            
         )
         model_info_dict['module_list'].append(map_to_bev_module)
         model_info_dict['num_bev_features'] = map_to_bev_module.num_bev_features
@@ -94,7 +97,8 @@ class Detector3DTemplate(nn.Module):
 
         backbone_2d_module = backbones_2d.__all__[self.model_cfg.BACKBONE_2D.NAME](
             model_cfg=self.model_cfg.BACKBONE_2D,
-            input_channels=model_info_dict['num_bev_features']
+            input_channels=model_info_dict['num_bev_features'],
+            bifpn=self.dataset.args.get('bifpn', [])
         )
         model_info_dict['module_list'].append(backbone_2d_module)
         model_info_dict['num_bev_features'] = backbone_2d_module.num_bev_features
@@ -161,6 +165,9 @@ class Detector3DTemplate(nn.Module):
 
         model_info_dict['module_list'].append(point_head_module)
         return point_head_module, model_info_dict
+
+
+    
 
     def forward(self, **kwargs):
         raise NotImplementedError
@@ -319,7 +326,7 @@ class Detector3DTemplate(nn.Module):
 
     def load_params_from_file(self, filename, logger, to_cpu=False):
         if not os.path.isfile(filename):
-            raise FileNotFoundError
+            raise FileNotFoundError(filename)
 
         logger.info('==> Loading parameters from checkpoint %s to %s' % (filename, 'CPU' if to_cpu else 'GPU'))
         loc_type = torch.device('cpu') if to_cpu else None

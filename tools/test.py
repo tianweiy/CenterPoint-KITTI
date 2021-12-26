@@ -65,8 +65,9 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
 
 
 def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
-    ckpt_list = glob.glob(os.path.join(ckpt_dir, '*checkpoint_epoch_*.pth'))
-    ckpt_list.sort(key=os.path.getmtime)
+    ckpt_list = os.listdir(ckpt_dir)
+    ckpt_list = [os.path.join(ckpt_dir, x)  for x in ckpt_list]
+
     evaluated_ckpt_list = [float(x.strip()) for x in open(ckpt_record_file, 'r').readlines()]
 
     for cur_ckpt in ckpt_list:
@@ -85,9 +86,11 @@ def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
 def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=False):
     # evaluated ckpt record
     ckpt_record_file = eval_output_dir / ('eval_list_%s.txt' % cfg.DATA_CONFIG.DATA_SPLIT['test'])
+    
+
     with open(ckpt_record_file, 'a'):
         pass
-
+    
     # tensorboard log
     if cfg.LOCAL_RANK == 0:
         tb_log = SummaryWriter(log_dir=str(eval_output_dir / ('tensorboard_%s' % cfg.DATA_CONFIG.DATA_SPLIT['test'])))
@@ -96,6 +99,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
 
     while True:
         # check whether there is checkpoint which is not evaluated
+
         cur_epoch_id, cur_ckpt = get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args)
         if cur_epoch_id == -1 or int(float(cur_epoch_id)) < args.start_epoch:
             wait_second = 30
@@ -113,6 +117,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
 
         model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
         model.cuda()
+        print(" $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ yay")
 
         # start evaluation
         cur_result_dir = eval_output_dir / ('epoch_%s' % cur_epoch_id) / cfg.DATA_CONFIG.DATA_SPLIT['test']

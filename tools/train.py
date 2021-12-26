@@ -3,6 +3,7 @@ import datetime
 import glob
 import os
 from pathlib import Path
+from numpy.core.records import array
 from test import repeat_eval_ckpt
 
 import torch
@@ -43,6 +44,7 @@ def parse_config():
     parser.add_argument('--start_epoch', type=int, default=0, help='')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
     parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
+    parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
 
     args = parser.parse_args()
 
@@ -55,11 +57,6 @@ def parse_config():
     return args, cfg
 
 def main():
-    # t = torch.cuda.get_device_properties(0).total_memory
-    # r = torch.cuda.memory_reserved(0)
-    # a = torch.cuda.memory_allocated(0)
-    # f = r-a  # free inside reserved    
-    # torch.cuda.empty_cache()
     args, cfg = parse_config()
     if args.launcher == 'none':
         dist_train = False
@@ -81,9 +78,15 @@ def main():
     if args.fix_random_seed:
         common_utils.set_random_seed(666)
 
+    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn)
+    
     output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
-    ckpt_dir = output_dir / 'ckpt'
+    ckpt_dir = output_dir / 'ckpt' / log_name
     output_dir.mkdir(parents=True, exist_ok=True)
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    subdirs = glob.glob(str(ckpt_dir) + "/*")
+    ckpt_dir = ckpt_dir / str(len(subdirs) + 1)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = output_dir / ('log_train_%s.txt' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
@@ -101,9 +104,9 @@ def main():
     log_config_to_file(cfg, logger=logger)
     if cfg.LOCAL_RANK == 0:
         os.system('cp %s %s' % (args.cfg_file, output_dir))
-
-    tb_log = SummaryWriter(log_dir=str(output_dir / 'tensorboard')) if cfg.LOCAL_RANK == 0 else None
-
+    
+    tb_log = SummaryWriter(log_dir=str(output_dir / 'tensorboard' / log_name)) if cfg.LOCAL_RANK == 0 else None
+    
     # -----------------------create dataloader & network & optimizer---------------------------
     train_set, train_loader, train_sampler = build_dataloader(
         dataset_cfg=cfg.DATA_CONFIG,
@@ -114,7 +117,8 @@ def main():
         training=True,
         merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
         total_epochs=args.epochs,
-        set_size_percentage=args.set_size
+        set_size_percentage=args.set_size,
+        bifpn=args.bifpn
     )
 
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=train_set)
@@ -130,6 +134,7 @@ def main():
     if args.pretrained_model is not None:
         model.load_params_from_file(filename=args.pretrained_model, to_cpu=dist, logger=logger)
 
+    
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1

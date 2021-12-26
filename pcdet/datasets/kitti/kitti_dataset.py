@@ -22,6 +22,7 @@ class KittiDataset(DatasetTemplate):
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
         )
+        self.args = kwargs
         self.split = self.dataset_cfg.DATA_SPLIT[self.mode]
         self.root_split_path = self.root_path / ('training' if self.split != 'test' else 'testing')
 
