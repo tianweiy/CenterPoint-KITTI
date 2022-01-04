@@ -65,6 +65,8 @@ class BiFPN(nn.Module):
     def forward(self, in_5, in_4, in_3):
 
         # Input convs, we keep the dimensions
+        # print(in_5.shape, in_4.shape, in_3.shape)
+
         conv_5_in = self.p5_inp_conv(in_5)  # [4, 256, 200, 176] , 4 is batch_size
         conv_4_in = self.p4_inp_conv(in_4)  # [4, 320, 200, 176]
         conv_3_in = self.p3_inp_conv(in_3)  # [4, 704, 400, 352]
@@ -74,11 +76,15 @@ class BiFPN(nn.Module):
         t_in = (self.p4_td_w1 * conv_4_in + self.p4_td_w2 * conv_5_in ) * dev_fact
         td_4 = self.p4_td_conv(t_in)
 
-        resized_td_4 = self.p4_upsample(td_4) if self.block_num == 1 else td_4
+        if self.block_num == 1 and not (conv_3_in.shape == td_4.shape):
+            resized_td_4 = self.p4_upsample(td_4) 
+        else:
+            resized_td_4 = td_4
+        
         dev_fact = 1 / (self.p3_out_w1 + self.p3_out_w2 + self.eps)
         t_in = (self.p3_out_w1 * conv_3_in + self.p3_out_w2 * resized_td_4) * dev_fact
         out_3 = self.p3_out_conv(t_in)
-        if self.block_num == 1:
+        if self.block_num == 1 and not out_3.shape == td_4.shape:
             out_3 = self.p3_downsample(out_3)
 
         # out convs 4 & 5 (down -- > top path)
@@ -107,17 +113,64 @@ class BiFPN_Network(nn.Module):
 
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
-            
         
-
+        # print("####### params", self.num_of_params())
+        
     def forward(self, in_5, in_4, in_3):
-        
 
         # TODO: Get rid of loop by packing inputs into tuple
         for i in range(self.num_blocks):
             in_5, in_4, in_3 = self.layers[i](in_5, in_4, in_3)
 
         return in_5, in_4, in_3
+    
+    def num_of_params(self):
+        layers_num_p = sum([x.numel() for p in self.layers for x in p.parameters()])
+        return layers_num_p 
+
+
+class BiFPN_Network_SkipConnections(nn.Module):
+    def __init__(self, fpn_sizes, out_channels: list = [256], eps=1e-4):
+        super().__init__()
+
+        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.num_blocks = len(out_channels)
+        self.layers = []
+        self.final_convs = [[conv_block(out_channels[i], fpn_sizes[j], kernel_size=1, padding=0).to(device=self.device) for j in range(len(fpn_sizes))] for i in range(len(out_channels))]
+        for i in range(self.num_blocks):
+         
+            current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
+            self.layers.append(current)
+
+        # print("####### params", self.num_of_params())
+        
+    def forward(self, in_5, in_4, in_3):
+    
+        running_input = in_5
+        for i in range(self.num_blocks):
+            inputs = [in_5, in_4, in_3]
+            outs = list(self.layers[i](in_5, in_4, in_3))
+            
+            for j in range(len(outs)):
+                outs[j] = self.final_convs[i][j](outs[j]) + inputs[j].to(device=self.device)
+            in_5, in_4, in_3 = outs
+            running_input = inputs[0]
+        return in_5, in_4, in_3, running_input
+
+
+    def is_same_spatial(self, x1, x2):
+        H1, W1 = x1.shape[-2], x1.shape[-1]
+        H2, W2 = x2.shape[-2], x2.shape[-1]
+        return H1 == H2 and W1 == W2
+    
+    def is_same_channels(self, x1, x2):
+        return x1.shape[-3]  == x2.shape[-3]
+    
+    def num_of_params(self):
+        layers_num_p = sum([x.numel() for p in self.layers for x in p.parameters()])
+        skip_convs_p = sum([s.numel() for p in self.final_convs for x in p for s in x.parameters()])
+        return layers_num_p + skip_convs_p
+
 
 
 

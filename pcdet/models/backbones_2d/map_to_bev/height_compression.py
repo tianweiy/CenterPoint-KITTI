@@ -9,7 +9,7 @@ class HeightCompression(nn.Module):
         self.model_cfg = model_cfg
         self.num_bev_features = self.model_cfg.NUM_BEV_FEATURES
         self.counter = 0
-        self.bifpn_sizes = kwargs['bifpn']
+        self.bifpn_sizes = kwargs.get('bifpn', [])
 
     def forward(self, batch_dict):
         """
@@ -26,6 +26,7 @@ class HeightCompression(nn.Module):
             N, C, D, H, W = x.shape
             x = x.view(N, C * D, H, W)
             return x
+            
         layer_5 = pseudo_image(batch_dict["encoded_spconv_tensor"])
         if len(self.bifpn_sizes) > 0:
             layer_4 = pseudo_image(batch_dict["multi_scale_3d_features"]["x_conv4"])

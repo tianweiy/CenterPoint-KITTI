@@ -84,7 +84,7 @@ class Detector3DTemplate(nn.Module):
         map_to_bev_module = map_to_bev.__all__[self.model_cfg.MAP_TO_BEV.NAME](
             model_cfg=self.model_cfg.MAP_TO_BEV,
             grid_size=model_info_dict['grid_size'],
-            bifpn=self.dataset.args.get('bifpn', [])
+            # bifpn=self.dataset.args.get('bifpn', [])
             
         )
         model_info_dict['module_list'].append(map_to_bev_module)
@@ -98,7 +98,8 @@ class Detector3DTemplate(nn.Module):
         backbone_2d_module = backbones_2d.__all__[self.model_cfg.BACKBONE_2D.NAME](
             model_cfg=self.model_cfg.BACKBONE_2D,
             input_channels=model_info_dict['num_bev_features'],
-            bifpn=self.dataset.args.get('bifpn', [])
+            bifpn=self.dataset.args.get('bifpn', []),
+            bifpn_skip=self.dataset.args.get('bifpn_skip', False)
         )
         model_info_dict['module_list'].append(backbone_2d_module)
         model_info_dict['num_bev_features'] = backbone_2d_module.num_bev_features
