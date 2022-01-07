@@ -10,7 +10,7 @@ from ..dataset import DatasetTemplate
 
 
 class KittiDataset(DatasetTemplate):
-    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None):
+    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, **kwargs):
         """
         Args:
             root_path:
@@ -22,6 +22,7 @@ class KittiDataset(DatasetTemplate):
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
         )
+        self.args = kwargs
         self.split = self.dataset_cfg.DATA_SPLIT[self.mode]
         self.root_split_path = self.root_path / ('training' if self.split != 'test' else 'testing')
 
@@ -29,9 +30,9 @@ class KittiDataset(DatasetTemplate):
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
 
         self.kitti_infos = []
-        self.include_kitti_data(self.mode)
+        self.include_kitti_data(self.mode, set_size_percentage=kwargs.get("set_size_percentage", None))
 
-    def include_kitti_data(self, mode):
+    def include_kitti_data(self, mode, set_size_percentage=None):
         if self.logger is not None:
             self.logger.info('Loading KITTI dataset')
         kitti_infos = []
@@ -43,11 +44,20 @@ class KittiDataset(DatasetTemplate):
             with open(info_path, 'rb') as f:
                 infos = pickle.load(f)
                 kitti_infos.extend(infos)
+            
+        if set_size_percentage:
+            if not (0 < set_size_percentage <= 100):
+                raise AssertionError("percantage value should be between 0 and 100")
+            partial_amount = int(len(kitti_infos) * set_size_percentage * 0.01)
+            indices = np.arange(len(kitti_infos))[:partial_amount]
+            kitti_infos = [kitti_infos[i] for i in indices] # list(map(kitti_infos.__getitem__, indices))
+            # if self.logger is not None:
+                # self.logger.info('Frame numbers in the dataset:', list(map(lambda x: x["point_cloud"]["lidar_idx"], kitti_infos)))
 
         self.kitti_infos.extend(kitti_infos)
-
         if self.logger is not None:
             self.logger.info('Total samples for KITTI dataset: %d' % (len(kitti_infos)))
+
 
     def set_split(self, split):
         super().__init__(

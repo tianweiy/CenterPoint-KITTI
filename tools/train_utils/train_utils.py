@@ -4,17 +4,20 @@ import os
 import torch
 import tqdm
 from torch.nn.utils import clip_grad_norm_
+import time
 
 
-def train_one_epoch(model, optimizer, train_loader, model_func, lr_scheduler, accumulated_iter, optim_cfg,
-                    rank, tbar, total_it_each_epoch, dataloader_iter, tb_log=None, leave_pbar=False):
+def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_scheduler, accumulated_iter, optim_cfg,
+                    rank, tbar, total_it_each_epoch, dataloader_iter, test_dataloader_iter, tb_log=None, leave_pbar=False, **kwargs):
+    start_time = time.time()
     if total_it_each_epoch == len(train_loader):
         dataloader_iter = iter(train_loader)
-
+        
     if rank == 0:
         pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='train', dynamic_ncols=True)
-
+    g_loss = 0
     for cur_it in range(total_it_each_epoch):
+        epoch_start = time.time()
         try:
             batch = next(dataloader_iter)
         except StopIteration:
@@ -41,9 +44,8 @@ def train_one_epoch(model, optimizer, train_loader, model_func, lr_scheduler, ac
         clip_grad_norm_(model.parameters(), optim_cfg.GRAD_NORM_CLIP)
         optimizer.step()
 
-        accumulated_iter += 1
-        disp_dict.update({'loss': loss.item(), 'lr': cur_lr})
-
+        disp_dict.update({'loss': loss.item(), 'val_loss': model.val_loss, 'lr': cur_lr})
+        g_loss += loss.item()
         # log to console and tensorboard
         if rank == 0:
             pbar.update()
@@ -53,18 +55,47 @@ def train_one_epoch(model, optimizer, train_loader, model_func, lr_scheduler, ac
 
             if tb_log is not None:
                 tb_log.add_scalar('train/loss', loss, accumulated_iter)
+                
                 tb_log.add_scalar('meta_data/learning_rate', cur_lr, accumulated_iter)
                 for key, val in tb_dict.items():
                     tb_log.add_scalar('train/' + key, val, accumulated_iter)
+        tb_log.add_scalar('time/one_batch_sec', time.time() - epoch_start, accumulated_iter)
+        accumulated_iter += 1
+
+    #num_of_params = sum([p.numel() for p in model.parameters()])
+    # print([l for l in model.module_list])
+    # Print val loss:
+
+    # model.eval()  # switch to eval mode
+    # with torch.no_grad():
+    #     total = 0
+    #     test_dataloader_iter = iter(test_loader)
+    #     pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='val', dynamic_ncols=True)
+    #     for it in range(len(test_loader)):
+    #         batch_test = next(test_dataloader_iter)
+    #         val_loss, tb_dict, disp_dict = model_func(model, batch_test)
+    #         total += val_loss.item()
+    #     val_loss = total / len(test_loader)
+    #     tb_log.add_scalar('val/loss', val_loss, accumulated_iter)
+    #     pbar.update()
+    #     pbar.set_postfix({"val_loss": val_loss})
+    #     tbar.set_postfix(disp_dict)
+    #     tbar.refresh()
+    #     model.val_loss = val_loss
+    # model.train()
+    
     if rank == 0:
         pbar.close()
+    tb_log.add_scalar('train/loss_per_epoch_2', g_loss / total_it_each_epoch, kwargs["cur_epoch"])
+    tb_log.add_scalar('train/loss_per_epoch', g_loss / total_it_each_epoch, accumulated_iter)
+    tb_log.add_scalar('time/one_epoch_sec', time.time() - start_time, accumulated_iter)
     return accumulated_iter
 
 
-def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_cfg,
+def train_model(model, optimizer, train_loader, test_loader, model_func, lr_scheduler, optim_cfg,
                 start_epoch, total_epochs, start_iter, rank, tb_log, ckpt_save_dir, train_sampler=None,
                 lr_warmup_scheduler=None, ckpt_save_interval=1, max_ckpt_save_num=50,
-                merge_all_iters_to_one_epoch=False):
+                merge_all_iters_to_one_epoch=False, **kwargs):
     accumulated_iter = start_iter
     with tqdm.trange(start_epoch, total_epochs, desc='epochs', dynamic_ncols=True, leave=(rank == 0)) as tbar:
         total_it_each_epoch = len(train_loader)
@@ -74,6 +105,7 @@ def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_
             total_it_each_epoch = len(train_loader) // max(total_epochs, 1)
 
         dataloader_iter = iter(train_loader)
+        test_dataloader_iter = iter(test_loader)
         for cur_epoch in tbar:
             if train_sampler is not None:
                 train_sampler.set_epoch(cur_epoch)
@@ -84,13 +116,16 @@ def train_model(model, optimizer, train_loader, model_func, lr_scheduler, optim_
             else:
                 cur_scheduler = lr_scheduler
             accumulated_iter = train_one_epoch(
-                model, optimizer, train_loader, model_func,
+                model, optimizer, train_loader, test_loader, model_func,
                 lr_scheduler=cur_scheduler,
                 accumulated_iter=accumulated_iter, optim_cfg=optim_cfg,
                 rank=rank, tbar=tbar, tb_log=tb_log,
                 leave_pbar=(cur_epoch + 1 == total_epochs),
                 total_it_each_epoch=total_it_each_epoch,
-                dataloader_iter=dataloader_iter
+                dataloader_iter=dataloader_iter,
+                test_dataloader_iter =  test_dataloader_iter,
+                **kwargs,
+                cur_epoch = cur_epoch
             )
 
             # save trained model

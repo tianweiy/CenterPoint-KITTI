@@ -3,6 +3,7 @@ import datetime
 import glob
 import os
 from pathlib import Path
+from numpy.core.records import array
 from test import repeat_eval_ckpt
 
 import torch
@@ -16,7 +17,16 @@ from pcdet.models import build_network, model_fn_decorator
 from pcdet.utils import common_utils
 from train_utils.optimization import build_optimizer, build_scheduler
 from train_utils.train_utils import train_model
+import shutil
 
+def find_next_folder_name(arr):
+    n = len(arr)
+    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
+    for i in range(n):
+        if i not in exsits:
+            n = i
+            break
+    return str(n)
 
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
@@ -34,14 +44,20 @@ def parse_config():
     parser.add_argument('--fix_random_seed', action='store_true', default=False, help='')
     parser.add_argument('--ckpt_save_interval', type=int, default=1, help='number of training epochs')
     parser.add_argument('--local_rank', type=int, default=0, help='local rank for distributed training')
-    parser.add_argument('--max_ckpt_save_num', type=int, default=30, help='max number of saved checkpoint')
+    parser.add_argument('--max_ckpt_save_num', type=int, default=100, help='max number of saved checkpoint')
     parser.add_argument('--merge_all_iters_to_one_epoch', action='store_true', default=False, help='')
     parser.add_argument('--set', dest='set_cfgs', default=None, nargs=argparse.REMAINDER,
                         help='set extra config keys if needed')
-
     parser.add_argument('--max_waiting_mins', type=int, default=0, help='max waiting minutes')
     parser.add_argument('--start_epoch', type=int, default=0, help='')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
+    parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
+    parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
+    parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
+    parser.add_argument('--testmode', dest='testmode', action='store_true', help="Don't create another folder")
+    parser.add_argument('--eval', type=bool, default=False, help='If to do evalutation at the end')
+    # parser.add_argument("--clear", type=bool, default=False, help)
+    parser.add_argument('--clear', dest='clear', action='store_true')
 
     args = parser.parse_args()
 
@@ -51,12 +67,11 @@ def parse_config():
 
     if args.set_cfgs is not None:
         cfg_from_list(args.set_cfgs, cfg)
-
     return args, cfg
-
 
 def main():
     args, cfg = parse_config()
+ 
     if args.launcher == 'none':
         dist_train = False
         total_gpus = 1
@@ -77,10 +92,34 @@ def main():
     if args.fix_random_seed:
         common_utils.set_random_seed(666)
 
+    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
+    log_name += "_lr" + str(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
+
+
     output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
-    ckpt_dir = output_dir / 'ckpt'
+    ckpt_dir = output_dir / 'ckpt' / log_name
     output_dir.mkdir(parents=True, exist_ok=True)
+    if args.clear and os.path.exists(ckpt_dir):
+        shutil.rmtree(str(ckpt_dir))
     ckpt_dir.mkdir(parents=True, exist_ok=True)
+    subdirs = os.listdir(ckpt_dir)
+    dir_name = find_next_folder_name(subdirs)
+    config_ckpt = ckpt_dir
+    ckpt_dir = config_ckpt / dir_name  if not args.testmode else config_ckpt / "test"
+    
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+       
+    tb_path = output_dir / 'tensorboard' / log_name
+
+    if args.clear and os.path.exists(tb_path):
+        shutil.rmtree(str(tb_path))
+    tb_path.mkdir(parents=True, exist_ok=True)
+    subdirs = os.listdir(tb_path)
+
+    tb_path = tb_path / find_next_folder_name(subdirs) if not args.testmode else tb_path / "test"
+    tb_path.mkdir(parents=True, exist_ok=True)
+
 
     log_file = output_dir / ('log_train_%s.txt' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
     logger = common_utils.create_logger(log_file, rank=cfg.LOCAL_RANK)
@@ -97,9 +136,10 @@ def main():
     log_config_to_file(cfg, logger=logger)
     if cfg.LOCAL_RANK == 0:
         os.system('cp %s %s' % (args.cfg_file, output_dir))
-
-    tb_log = SummaryWriter(log_dir=str(output_dir / 'tensorboard')) if cfg.LOCAL_RANK == 0 else None
-
+    
+    
+    tb_log = SummaryWriter(log_dir=str(tb_path)) if cfg.LOCAL_RANK == 0 else None
+    
     # -----------------------create dataloader & network & optimizer---------------------------
     train_set, train_loader, train_sampler = build_dataloader(
         dataset_cfg=cfg.DATA_CONFIG,
@@ -109,7 +149,10 @@ def main():
         logger=logger,
         training=True,
         merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
-        total_epochs=args.epochs
+        total_epochs=args.epochs,
+        set_size_percentage=args.set_size,
+        bifpn=args.bifpn,
+        bifpn_skip=args.bifpn_skip,
     )
 
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=train_set)
@@ -125,11 +168,13 @@ def main():
     if args.pretrained_model is not None:
         model.load_params_from_file(filename=args.pretrained_model, to_cpu=dist, logger=logger)
 
+    
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1
     else:
-        ckpt_list = glob.glob(str(ckpt_dir / '*checkpoint_epoch_*.pth'))
+        ckpt_list = glob.glob(str(config_ckpt / '**/*checkpoint_epoch_*.pth'), recursive=True)
+        print(ckpt_list)
         if len(ckpt_list) > 0:
             ckpt_list.sort(key=os.path.getmtime)
             it, start_epoch = model.load_params_with_optimizer(
@@ -147,13 +192,24 @@ def main():
         last_epoch=last_epoch, optim_cfg=cfg.OPTIMIZATION
     )
 
-    # -----------------------start training---------------------------
+    test_set, test_loader, sampler = build_dataloader(
+    dataset_cfg=cfg.DATA_CONFIG,
+    class_names=cfg.CLASS_NAMES,
+    batch_size=args.batch_size,
+    dist=dist_train, workers=args.workers, logger=logger,  training=True,
+    set_size_percentage=args.set_size,
+    bifpn=args.bifpn
+    )
+
+    # -----------------------start training--------------------------
+
     logger.info('**********************Start training %s/%s(%s)**********************'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
     train_model(
         model,
         optimizer,
         train_loader,
+        test_loader,
         model_func=model_fn_decorator(),
         lr_scheduler=lr_scheduler,
         optim_cfg=cfg.OPTIMIZATION,
@@ -167,31 +223,27 @@ def main():
         lr_warmup_scheduler=lr_warmup_scheduler,
         ckpt_save_interval=args.ckpt_save_interval,
         max_ckpt_save_num=args.max_ckpt_save_num,
-        merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch
+        merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
     )
 
     logger.info('**********************End training %s/%s(%s)**********************\n\n\n'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
-    logger.info('**********************Start evaluation %s/%s(%s)**********************' %
-                (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
-    test_set, test_loader, sampler = build_dataloader(
-        dataset_cfg=cfg.DATA_CONFIG,
-        class_names=cfg.CLASS_NAMES,
-        batch_size=args.batch_size,
-        dist=dist_train, workers=args.workers, logger=logger, training=False
-    )
-    eval_output_dir = output_dir / 'eval' / 'eval_with_train'
-    eval_output_dir.mkdir(parents=True, exist_ok=True)
-    args.start_epoch = max(args.epochs - 10, 0)  # Only evaluate the last 10 epochs
+    if args.eval:
+        logger.info('**********************Start evaluation %s/%s(%s)**********************' %
+                    (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
-    repeat_eval_ckpt(
-        model.module if dist_train else model,
-        test_loader, args, eval_output_dir, logger, ckpt_dir,
-        dist_test=dist_train
-    )
-    logger.info('**********************End evaluation %s/%s(%s)**********************' %
-                (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
+        eval_output_dir = output_dir / 'eval' / 'eval_with_train'
+        eval_output_dir.mkdir(parents=True, exist_ok=True)
+        args.start_epoch = max(args.epochs - 10, 0)  # Only evaluate the last 10 epochs
+
+        repeat_eval_ckpt(
+            model.module if dist_train else model,
+            test_loader, args, eval_output_dir, logger, ckpt_dir,
+            dist_test=dist_train
+        )
+        logger.info('**********************End evaluation %s/%s(%s)**********************' %
+                    (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
 
 if __name__ == '__main__':

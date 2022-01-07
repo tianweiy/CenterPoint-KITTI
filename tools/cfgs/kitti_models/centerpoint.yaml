@@ -49,7 +49,7 @@ MODEL:
 
     POST_PROCESSING:
         RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
-        SCORE_THRESH: 0.1
+        SCORE_THRESH: 0.25  # 0.1 original value, made higher for real inference and reduce number of FPs. It shows scores higher than this
         OUTPUT_RAW_SCORE: False
 
         EVAL_METRIC: kitti
@@ -64,18 +64,18 @@ MODEL:
 
 OPTIMIZATION:
     BATCH_SIZE_PER_GPU: 8
-    NUM_EPOCHS: 80
+    NUM_EPOCHS: 80  # we can determine it also by --epochs argument
 
     OPTIMIZER: adam_onecycle
-    LR: 0.003
+    LR: 0.003  # upper bound
     WEIGHT_DECAY: 0.01
     MOMENTUM: 0.9
 
-    MOMS: [0.95, 0.85]
+    MOMS: [0.95, 0.85]  # cyclic momentum, higher bound and lower bound. reducing the momentum when learning rate is increasing gives better results 
     PCT_START: 0.4
-    DIV_FACTOR: 10
-    DECAY_STEP_LIST: [35, 45]
-    LR_DECAY: 0.1
+    DIV_FACTOR: 10  # lower bound is lr/div_factor
+    DECAY_STEP_LIST: [35, 45]  # one-cycle doesn't need this 
+    LR_DECAY: 0.1  # one-cycle doesn't need this 
     LR_CLIP: 0.0000001
 
     LR_WARMUP: False
