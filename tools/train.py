@@ -21,7 +21,7 @@ import shutil
 
 def find_next_folder_name(arr):
     n = len(arr)
-    exsits  = {int(arr[i]) for i in range(n)}
+    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
     for i in range(n):
         if i not in exsits:
             n = i
@@ -54,6 +54,7 @@ def parse_config():
     parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
     parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
     parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
+    parser.add_argument('--testmode', dest='testmode', action='store_true', help="Don't create another folder")
     parser.add_argument('--eval', type=bool, default=False, help='If to do evalutation at the end')
     # parser.add_argument("--clear", type=bool, default=False, help)
     parser.add_argument('--clear', dest='clear', action='store_true')
@@ -91,8 +92,10 @@ def main():
     if args.fix_random_seed:
         common_utils.set_random_seed(666)
 
-    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn)
-    
+    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
+    log_name += "_lr" + str(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
+
+
     output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
     ckpt_dir = output_dir / 'ckpt' / log_name
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -101,7 +104,8 @@ def main():
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     subdirs = os.listdir(ckpt_dir)
     dir_name = find_next_folder_name(subdirs)
-    ckpt_dir = ckpt_dir / dir_name
+    config_ckpt = ckpt_dir
+    ckpt_dir = config_ckpt / dir_name  if not args.testmode else config_ckpt / "test"
     
     ckpt_dir.mkdir(parents=True, exist_ok=True)
 
@@ -112,7 +116,8 @@ def main():
         shutil.rmtree(str(tb_path))
     tb_path.mkdir(parents=True, exist_ok=True)
     subdirs = os.listdir(tb_path)
-    tb_path = tb_path / find_next_folder_name(subdirs)
+
+    tb_path = tb_path / find_next_folder_name(subdirs) if not args.testmode else tb_path / "test"
     tb_path.mkdir(parents=True, exist_ok=True)
 
 
@@ -168,7 +173,8 @@ def main():
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1
     else:
-        ckpt_list = glob.glob(str(ckpt_dir / '*checkpoint_epoch_*.pth'))
+        ckpt_list = glob.glob(str(config_ckpt / '**/*checkpoint_epoch_*.pth'), recursive=True)
+        print(ckpt_list)
         if len(ckpt_list) > 0:
             ckpt_list.sort(key=os.path.getmtime)
             it, start_epoch = model.load_params_with_optimizer(

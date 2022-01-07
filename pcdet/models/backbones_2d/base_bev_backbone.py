@@ -98,14 +98,9 @@ class BaseBEVBackbone(nn.Module):
 
         spatial_features = data_dict['spatial_features']
         ups = []
-        # ret_dict = {}
         
         x = spatial_features
         for i in range(len(self.blocks)):
-            
-
-            # stride = int(spatial_features.shape[2] / x.shape[2])
-            # ret_dict['spatial_features_%dx' % stride] = x
             
             if len(self.bifpn_sizes) > 0 and i + 1 == len(self.blocks):
                 orig_layers = []
@@ -118,6 +113,7 @@ class BaseBEVBackbone(nn.Module):
                 N = len(orig_layers)
                 if self.bifpn_init_flag:
                     # TODO: Put BiFPN details in CFG file.
+                    print("We reach here only once")
                     bifpn = BiFPN_Network_SkipConnections if self.bifpn_skip else BiFPN_Network
                     self.bifpn = bifpn([orig_layers[-1].shape[1], orig_layers[-(int(N / 2) + 1)].shape[1], orig_layers[-N].shape[1]], out_channels=self.bifpn_sizes)
                     self.bifpn.to(self.bifpn.device)

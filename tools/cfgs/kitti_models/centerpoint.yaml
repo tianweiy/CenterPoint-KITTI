@@ -67,15 +67,15 @@ OPTIMIZATION:
     NUM_EPOCHS: 80  # we can determine it also by --epochs argument
 
     OPTIMIZER: adam_onecycle
-    LR: 0.003
+    LR: 0.003  # upper bound
     WEIGHT_DECAY: 0.01
     MOMENTUM: 0.9
 
-    MOMS: [0.95, 0.85]
+    MOMS: [0.95, 0.85]  # cyclic momentum, higher bound and lower bound. reducing the momentum when learning rate is increasing gives better results 
     PCT_START: 0.4
-    DIV_FACTOR: 10
-    DECAY_STEP_LIST: [35, 45]
-    LR_DECAY: 0.1
+    DIV_FACTOR: 10  # lower bound is lr/div_factor
+    DECAY_STEP_LIST: [35, 45]  # one-cycle doesn't need this 
+    LR_DECAY: 0.1  # one-cycle doesn't need this 
     LR_CLIP: 0.0000001
 
     LR_WARMUP: False

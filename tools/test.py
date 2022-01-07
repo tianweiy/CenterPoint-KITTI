@@ -37,6 +37,9 @@ def parse_config():
     parser.add_argument('--eval_all', action='store_true', default=False, help='whether to evaluate all checkpoints')
     parser.add_argument('--ckpt_dir', type=str, default=None, help='specify a ckpt directory to be evaluated if needed')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
+    parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
+    parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
+    parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
 
     args = parser.parse_args()
 
@@ -188,7 +191,10 @@ def main():
         dataset_cfg=cfg.DATA_CONFIG,
         class_names=cfg.CLASS_NAMES,
         batch_size=args.batch_size,
-        dist=dist_test, workers=args.workers, logger=logger, training=False
+        dist=dist_test, workers=args.workers, logger=logger, training=False,
+        set_size_percentage=args.set_size,
+        bifpn=args.bifpn,
+        bifpn_skip=args.bifpn_skip,
     )
 
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
