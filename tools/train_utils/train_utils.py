@@ -62,27 +62,28 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
         tb_log.add_scalar('time/one_batch_sec', time.time() - epoch_start, accumulated_iter)
         accumulated_iter += 1
 
-    #num_of_params = sum([p.numel() for p in model.parameters()])
+    # num_of_params = sum([p.numel() for p in model.parameters()])
     # print([l for l in model.module_list])
-    # Print val loss:
+    #Print val loss:
 
-    # model.eval()  # switch to eval mode
-    # with torch.no_grad():
-    #     total = 0
-    #     test_dataloader_iter = iter(test_loader)
-    #     pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='val', dynamic_ncols=True)
-    #     for it in range(len(test_loader)):
-    #         batch_test = next(test_dataloader_iter)
-    #         val_loss, tb_dict, disp_dict = model_func(model, batch_test)
-    #         total += val_loss.item()
-    #     val_loss = total / len(test_loader)
-    #     tb_log.add_scalar('val/loss', val_loss, accumulated_iter)
-    #     pbar.update()
-    #     pbar.set_postfix({"val_loss": val_loss})
-    #     tbar.set_postfix(disp_dict)
-    #     tbar.refresh()
-    #     model.val_loss = val_loss
-    # model.train()
+    if (kwargs['cur_epoch'] + 1) % 5: 
+        model.eval()  # switch to eval mode
+        with torch.no_grad():
+            total = 0
+            test_dataloader_iter = iter(test_loader)
+            pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='val', dynamic_ncols=True)
+            for it in range(len(test_loader)):
+                batch_test = next(test_dataloader_iter)
+                val_loss, tb_dict, disp_dict = model_func(model, batch_test)
+                total += val_loss.item()
+            val_loss = total / len(test_loader)
+            tb_log.add_scalar('val/loss', val_loss, kwargs["cur_epoch"])
+            pbar.update()
+            pbar.set_postfix({"val_loss": val_loss})
+            tbar.set_postfix(disp_dict)
+            tbar.refresh()
+            model.val_loss = val_loss
+        model.train()
     
     if rank == 0:
         pbar.close()
