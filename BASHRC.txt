@@ -1,0 +1,48 @@
+alias gs="git status"
+alias gsh="git status show"
+alias gd="git diff"
+alias gc="git commit -m"
+alias gpush="git push origin HEAD"
+alias ga="git add"
+alias br="code ~/.bashrc"
+alias sbr="source ~/.bashrc"
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+function vncnewthing() {
+  host myip.opendns.com resolver1.opendns.com
+  vnc -kill :1
+  vnc -kill :2
+  vnc -kill :3
+  vncnew
+  export DISPLAY=:1
+}
+
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+alias vnckill="vnc -kill :"
+alias vncn=vncnewthing
+
+alias cac="source /opt/conda/bin/activate cpkitti1"
+alias ll="ls -l -hs"
+
+alias permission="sudo chmod -R 777 /home/koraykoca34"br
+
+# Centerpoint aliases:
+alias train="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python /home/koraykoca34/CenterPoint-KITTI/tools/train.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml"
+alias demo="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python demo.py --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml \
+    --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth \
+    --data_path /home/koraykoca34/CenterPoint-KITTI/data/kitti/training/velodyne/000001.bin"
+alias testcp="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools &&  \
+    python /home/koraykoca34/CenterPoint-KITTI/tools/test.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth"
+
+# --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth \
+# --ckpt /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/checkpoint_epoch_51.pth \
