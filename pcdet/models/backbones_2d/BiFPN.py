@@ -98,7 +98,6 @@ class BiFPN(nn.Module):
 
         return out_5, out_4, out_3
 
-
 class BiFPN_Network(nn.Module):
     def __init__(self, fpn_sizes, out_channels: list = [256], eps=1e-4):
         super().__init__()
@@ -114,6 +113,7 @@ class BiFPN_Network(nn.Module):
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
         
+        self.bifpn_layers = nn.Sequential(*self.layers)
         # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):
@@ -142,6 +142,11 @@ class BiFPN_Network_SkipConnections(nn.Module):
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
 
+        self.bifpn_layers = nn.Sequential(*self.layers)
+        y = []
+        for x in self.final_convs:
+            y += x
+        self.final_layers = nn.Sequential(*y)
         # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):

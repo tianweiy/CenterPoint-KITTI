@@ -9,10 +9,10 @@ import time
 
 def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_scheduler, accumulated_iter, optim_cfg,
                     rank, tbar, total_it_each_epoch, dataloader_iter, test_dataloader_iter, tb_log=None, leave_pbar=False, **kwargs):
+
     start_time = time.time()
     if total_it_each_epoch == len(train_loader):
         dataloader_iter = iter(train_loader)
-        
     if rank == 0:
         pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='train', dynamic_ncols=True)
     g_loss = 0
@@ -36,6 +36,7 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
             tb_log.add_scalar('meta_data/learning_rate', cur_lr, accumulated_iter)
 
         model.train()
+        # model.eval()
         optimizer.zero_grad()
 
         loss, tb_dict, disp_dict = model_func(model, batch)
@@ -43,7 +44,6 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
         loss.backward()
         clip_grad_norm_(model.parameters(), optim_cfg.GRAD_NORM_CLIP)
         optimizer.step()
-
         disp_dict.update({'loss': loss.item(), 'val_loss': model.val_loss, 'lr': cur_lr})
         g_loss += loss.item()
         # log to console and tensorboard
@@ -65,7 +65,6 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
     # num_of_params = sum([p.numel() for p in model.parameters()])
     # print([l for l in model.module_list])
     #Print val loss:
-
     if (kwargs['cur_epoch'] + 1) % 5: 
         model.eval()  # switch to eval mode
         with torch.no_grad():
@@ -76,6 +75,7 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
                 batch_test = next(test_dataloader_iter)
                 val_loss, tb_dict, disp_dict = model_func(model, batch_test)
                 total += val_loss.item()
+                print("$$@#$#@$#@$#@$#@$#@$#@$@#$#@@$", val_loss)
             val_loss = total / len(test_loader)
             tb_log.add_scalar('val/loss', val_loss, kwargs["cur_epoch"])
             pbar.update()
@@ -84,7 +84,20 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
             tbar.refresh()
             model.val_loss = val_loss
         model.train()
-    
+        # load_data_to_gpu(batch_test)
+            # with torch.no_grad():
+                # pred_dicts, ret_dict = model(batch_test)
+        #     print("$$@#$#@$#@$#@$#@$#@$#@$@#$#@@$", val_loss)
+        #     total += val_loss.item()
+        # val_loss = total / len(test_loader)
+        # tb_log.add_scalar('val/loss', val_loss, kwargs["cur_epoch"])
+        # pbar.update()
+        # pbar.set_postfix({"val_loss": val_loss})
+        # tbar.set_postfix(disp_dict)
+        # tbar.refresh()
+        # model.val_loss = val_loss
+        model.train()
+        
     if rank == 0:
         pbar.close()
     tb_log.add_scalar('train/loss_per_epoch_2', g_loss / total_it_each_epoch, kwargs["cur_epoch"])
@@ -107,9 +120,14 @@ def train_model(model, optimizer, train_loader, test_loader, model_func, lr_sche
 
         dataloader_iter = iter(train_loader)
         test_dataloader_iter = iter(test_loader)
+        print(tbar)
         for cur_epoch in tbar:
+            
+
             if train_sampler is not None:
                 train_sampler.set_epoch(cur_epoch)
+                if kwargs.get("test_sampler", None):
+                    kwargs["test_sampler"].set_epoch(cur_epoch)
 
             # train one epoch
             if lr_warmup_scheduler is not None and cur_epoch < optim_cfg.WARMUP_EPOCH:

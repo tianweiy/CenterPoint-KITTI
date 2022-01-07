@@ -55,29 +55,6 @@ class BaseBEVBackbone(nn.Module):
             
             self.blocks.append(nn.Sequential(*cur_layers))
 
-            # BiFPN should be inserted to the last nn.Sequential
-            if  len(self.bifpn_sizes) > 0 and idx  + 1 ==  layer_nums:
-                bifpn = BiFPN_Network_SkipConnections if self.bifpn_skip else BiFPN_Network
-                self.bifpn = bifpn([num_filters[idx]] * 3, out_channels=self.bifpn_sizes)
-                self.bifpn.to(self.bifpn.device) # Servus
-
-                # If we have skip connections:
-                
-                output_channels = self.bifpn_sizes[-1] * 3 # w/o_skip, output_channels --> the number of channels of the concatination of all 3 branches. 
-                if self.bifpn_skip:
-                    output_channels = self.bifpn_sizes[-1] # with_skip, output_channels --> It is the number of channels of the original input.
-                    self.intermediate_block = nn.Sequential(
-                        nn.Conv2d(output_channels * 3, output_channels, kernel_size=1),
-                        nn.BatchNorm2d(output_channels),
-                        nn.ReLU()
-                    ).to(self.bifpn.device)
-                self.last_block = nn.Sequential(
-                    nn.Conv2d(output_channels, *self.model_cfg.NUM_FILTERS, kernel_size=1),
-                    nn.BatchNorm2d(*self.model_cfg.NUM_FILTERS),
-                    nn.ReLU()
-                ).to(self.bifpn.device)
-
-
             if len(upsample_strides) > 0:
                 stride = upsample_strides[idx]
                 if stride >= 1:
@@ -101,6 +78,28 @@ class BaseBEVBackbone(nn.Module):
                         nn.BatchNorm2d(num_upsample_filters[idx], eps=1e-3, momentum=0.01),
                         nn.ReLU()
                     ))
+         # BiFPN should be inserted to the last nn.Sequential
+        if  len(self.bifpn_sizes) > 0:
+            bifpn = BiFPN_Network_SkipConnections if self.bifpn_skip else BiFPN_Network
+            self.bifpn = bifpn([num_filters[idx]] * 3, out_channels=self.bifpn_sizes)
+            self.bifpn.to(self.bifpn.device) # Servus
+
+            # If we have skip connections:
+            
+            output_channels = num_filters[idx] * 3 # w/o_skip, output_channels --> the number of channels of the concatination of all 3 branches. 
+            if self.bifpn_skip:
+                output_channels = num_filters[idx]
+                # with_skip, output_channels --> It is the number of channels of the original input.
+                self.intermediate_block = nn.Sequential(
+                    nn.Conv2d(num_filters[idx] * 3, num_filters[idx], kernel_size=1),
+                    nn.BatchNorm2d(num_filters[idx]),
+                    nn.ReLU()
+                ).to(self.bifpn.device)
+            self.last_block = nn.Sequential(
+                nn.Conv2d(output_channels, *self.model_cfg.NUM_FILTERS, kernel_size=1),
+                nn.BatchNorm2d(*self.model_cfg.NUM_FILTERS),
+                nn.ReLU()
+            ).to(self.bifpn.device)
 
         c_in = sum(num_upsample_filters)
         if len(upsample_strides) > num_levels:
@@ -125,7 +124,6 @@ class BaseBEVBackbone(nn.Module):
         
         x = spatial_features
         for i in range(len(self.blocks)):
-            
             if len(self.bifpn_sizes) > 0 and i + 1 == len(self.blocks):
                 orig_layers = []
                 for j, layer in enumerate(self.blocks[i]):
@@ -134,35 +132,11 @@ class BaseBEVBackbone(nn.Module):
                         orig_layers.append(x)
                 
                 N = len(orig_layers)
-                # if self.bifpn_init_flag:
-                #     # TODO: Put BiFPN details in CFG file.
-                #     print("We reach here only once")
-                #     bifpn = BiFPN_Network_SkipConnections if self.bifpn_skip else BiFPN_Network
-                #     self.bifpn = bifpn([orig_layers[-1].shape[1], orig_layers[-(int(N / 2) + 1)].shape[1], orig_layers[-N].shape[1]], out_channels=self.bifpn_sizes)
-                #     self.bifpn.to(self.bifpn.device)
-
                 feature_maps = self.bifpn.forward(orig_layers[-1], orig_layers[-(int(N / 2) + 1)], orig_layers[-N])
                 x = cat(feature_maps[:3], axis=1)
-
-                # if self.bifpn_init_flag:
-                #     last_input = x.shape[1]
-                #     if self.bifpn_skip:
-                #         last_input = feature_maps[-1].shape[1]
-                #         self.intermediate_block = nn.Sequential(
-                #             nn.Conv2d(x.shape[1], last_input, kernel_size=1),
-                #             nn.BatchNorm2d(last_input),
-                #             nn.ReLU()
-                #         ).to(self.bifpn.device)
-
-                #     self.last_block = nn.Sequential(
-                #         nn.Conv2d(last_input, *self.model_cfg.NUM_FILTERS, kernel_size=1),
-                #         nn.BatchNorm2d(*self.model_cfg.NUM_FILTERS),
-                #         nn.ReLU()
-                #     ).to(self.bifpn.device)
                 if self.bifpn_skip:
                     x = feature_maps[-1] + self.intermediate_block(x)
-                x = self.last_block(x)
-                
+                x = self.last_block(x) 
             else:
                 x = self.blocks[i](x)
 

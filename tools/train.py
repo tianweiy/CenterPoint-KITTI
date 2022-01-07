@@ -34,7 +34,7 @@ def parse_config():
 
     parser.add_argument('--batch_size', type=int, default=None, required=False, help='batch size for training')
     parser.add_argument('--epochs', type=int, default=None, required=False, help='number of epochs to train for')
-    parser.add_argument('--workers', type=int, default=8, help='number of workers for dataloader')
+    parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
     parser.add_argument('--ckpt', type=str, default=None, help='checkpoint to start from')
     parser.add_argument('--pretrained_model', type=str, default=None, help='pretrained_model')
@@ -173,8 +173,7 @@ def main():
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1
     else:
-        ckpt_list = glob.glob(str(config_ckpt / '**/*checkpoint_epoch_*.pth'), recursive=True)
-        print(ckpt_list)
+        ckpt_list = glob.glob(str(config_ckpt / '*checkpoint_epoch_*.pth'))
         if len(ckpt_list) > 0:
             ckpt_list.sort(key=os.path.getmtime)
             it, start_epoch = model.load_params_with_optimizer(
@@ -192,17 +191,16 @@ def main():
         last_epoch=last_epoch, optim_cfg=cfg.OPTIMIZATION
     )
 
-    test_set, test_loader, sampler = build_dataloader(
-    dataset_cfg=cfg.DATA_CONFIG,
-    class_names=cfg.CLASS_NAMES,
-    batch_size=args.batch_size,
-    dist=dist_train, workers=args.workers, logger=logger,  training=True,
-    set_size_percentage=args.set_size,
-    bifpn=args.bifpn
+    test_set, test_loader, test_sampler = build_dataloader(
+        dataset_cfg=cfg.DATA_CONFIG,
+        class_names=cfg.CLASS_NAMES,
+        batch_size=args.batch_size,
+        dist=dist_train, workers=args.workers, logger=logger,
+        set_size_percentage=args.set_size,
+        bifpn=args.bifpn,
+        training=False
     )
-
     # -----------------------start training--------------------------
-
     logger.info('**********************Start training %s/%s(%s)**********************'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
     train_model(
@@ -224,12 +222,20 @@ def main():
         ckpt_save_interval=args.ckpt_save_interval,
         max_ckpt_save_num=args.max_ckpt_save_num,
         merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
+        test_sampler=test_sampler
     )
 
     logger.info('**********************End training %s/%s(%s)**********************\n\n\n'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
     if args.eval:
+
+        test_set, test_loader, sampler = build_dataloader(
+            dataset_cfg=cfg.DATA_CONFIG,
+            class_names=cfg.CLASS_NAMES,
+            batch_size=args.batch_size,
+            dist=dist_train, workers=args.workers, logger=logger, training=False
+        )
         logger.info('**********************Start evaluation %s/%s(%s)**********************' %
                     (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
