@@ -53,8 +53,10 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
     start_time = time.time()
     for i, batch_dict in enumerate(dataloader):
         load_data_to_gpu(batch_dict)
+        model.train()
         with torch.no_grad():
             pred_dicts, ret_dict = model(batch_dict)
+        
         disp_dict = {}
 
         statistics_info(cfg, ret_dict, metric, disp_dict)
@@ -91,11 +93,11 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
 
     gt_num_cnt = metric['gt_num']
     for cur_thresh in cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST:
-        cur_roi_recall = metric['recall_roi_%s' % str(cur_thresh)] / max(gt_num_cnt, 1)
+        # cur_roi_recall = metric['recall_roi_%s' % str(cur_thresh)] / max(gt_num_cnt, 1)
         cur_rcnn_recall = metric['recall_rcnn_%s' % str(cur_thresh)] / max(gt_num_cnt, 1)
-        logger.info('recall_roi_%s: %f' % (cur_thresh, cur_roi_recall))
+        # logger.info('recall_roi_%s: %f' % (cur_thresh, cur_roi_recall))
         logger.info('recall_rcnn_%s: %f' % (cur_thresh, cur_rcnn_recall))
-        ret_dict['recall/roi_%s' % str(cur_thresh)] = cur_roi_recall
+        # ret_dict['recall/roi_%s' % str(cur_thresh)] = cur_roi_recall
         ret_dict['recall/rcnn_%s' % str(cur_thresh)] = cur_rcnn_recall
 
     total_pred_objects = 0
@@ -113,8 +115,9 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
         output_path=final_output_dir
     )
 
+    # exit(1)
     logger.info(result_str)
-    ret_dict.update(result_dict)
+    # ret_dict.update(result_dict)
 
     logger.info('Result is save to %s' % result_dir)
     logger.info('****************Evaluation done.*****************')

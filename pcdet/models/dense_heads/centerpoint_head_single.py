@@ -73,20 +73,20 @@ class CenterHead(nn.Module):
         self.forward_ret_dict['cls_preds'] = cls_preds
         self.forward_ret_dict['box_preds'] = box_preds
 
-        # if self.training:
-        targets_dict = self.assign_targets(
-            gt_boxes=data_dict['gt_boxes']
-        )
-        self.forward_ret_dict.update(targets_dict)
+        if self.training:
+            targets_dict = self.assign_targets(
+                gt_boxes=data_dict['gt_boxes']
+            )
+            self.forward_ret_dict.update(targets_dict)
 
-        # if not self.training or self.predict_boxes_when_training:
-        batch_cls_preds, batch_box_preds = self.generate_predicted_boxes(
-            batch_size=data_dict['batch_size'],
-            cls_preds=cls_preds, box_preds=box_preds, dir_cls_preds=None
-        )
-        data_dict['batch_cls_preds'] = batch_cls_preds
-        data_dict['batch_box_preds'] = batch_box_preds
-        data_dict['cls_preds_normalized'] = False
+        if not self.training or self.predict_boxes_when_training:
+            batch_cls_preds, batch_box_preds = self.generate_predicted_boxes(
+                batch_size=data_dict['batch_size'],
+                cls_preds=cls_preds, box_preds=box_preds, dir_cls_preds=None
+            )
+            data_dict['batch_cls_preds'] = batch_cls_preds
+            data_dict['batch_box_preds'] = batch_box_preds
+            data_dict['cls_preds_normalized'] = False
 
         return data_dict
 

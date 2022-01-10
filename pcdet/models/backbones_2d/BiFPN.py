@@ -113,7 +113,8 @@ class BiFPN_Network(nn.Module):
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
         
-        self.bifpn_layers = nn.Sequential(*self.layers)
+        self.layers = nn.ModuleList(self.layers)
+        # self.bifpn_layers = nn.Sequential(*self.layers)
         # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):
@@ -136,18 +137,15 @@ class BiFPN_Network_SkipConnections(nn.Module):
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.num_blocks = len(out_channels)
         self.layers = []
-        self.final_convs = [[conv_block(out_channels[i], fpn_sizes[j], kernel_size=1, padding=0).to(device=self.device) for j in range(len(fpn_sizes))] for i in range(len(out_channels))]
+        self.final_convs = nn.ModuleList([nn.ModuleList([conv_block(out_channels[i], fpn_sizes[j], kernel_size=1, padding=0).to(device=self.device) for j in range(len(fpn_sizes))]) for i in range(len(out_channels))])
         for i in range(self.num_blocks):
          
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
 
-        self.bifpn_layers = nn.Sequential(*self.layers)
-        y = []
-        for x in self.final_convs:
-            y += x
-        self.final_layers = nn.Sequential(*y)
-        # print("####### params", self.num_of_params())
+
+        self.layers = nn.ModuleList(self.layers)
+                # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):
     

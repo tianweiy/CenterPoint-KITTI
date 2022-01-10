@@ -40,6 +40,9 @@ def parse_config():
     parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
     parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
     parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
+    parser.add_argument('--ckpt_start', type=int,  default=-1, help='From which ckpt to start')
+
+
 
     args = parser.parse_args()
 
@@ -66,7 +69,6 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
         result_dir=eval_output_dir, save_to_file=args.save_to_file
     )
 
-
 def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
     ckpt_list = os.listdir(ckpt_dir)
     ckpt_list = [os.path.join(ckpt_dir, x)  for x in ckpt_list]
@@ -89,35 +91,22 @@ def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
 def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=False):
     # evaluated ckpt record
     ckpt_record_file = eval_output_dir / ('eval_list_%s.txt' % cfg.DATA_CONFIG.DATA_SPLIT['test'])
-    
 
+    ckpt_list = os.listdir(ckpt_dir)
+    ckpt_list = [os.path.join(ckpt_dir, x)  for x in ckpt_list]
+    ckpt_list = sorted(ckpt_list, key=lambda c: int(c.split(".pth")[0].split("_")[-1]))  # Sort the checkpoints
     with open(ckpt_record_file, 'a'):
         pass
     
     # tensorboard log
+    curr_folder = str("_batch" + str(args.batch_size) + "_set" + str(args.set_size) + "_bifpn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip" + "_lr" + "{:.2f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)))
+    eval_output_dir = eval_output_dir / curr_folder
     if cfg.LOCAL_RANK == 0:
         tb_log = SummaryWriter(log_dir=str(eval_output_dir / ('tensorboard_%s' % cfg.DATA_CONFIG.DATA_SPLIT['test'])))
-    total_time = 0
-    first_eval = True
 
-    while True:
-        # check whether there is checkpoint which is not evaluated
-
-        cur_epoch_id, cur_ckpt = get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args)
-        if cur_epoch_id == -1 or int(float(cur_epoch_id)) < args.start_epoch:
-            wait_second = 30
-            if cfg.LOCAL_RANK == 0:
-                print('Wait %s seconds for next check (progress: %.1f / %d minutes): %s \r'
-                      % (wait_second, total_time * 1.0 / 60, args.max_waiting_mins, ckpt_dir), end='', flush=True)
-            time.sleep(wait_second)
-            total_time += 30
-            if total_time > args.max_waiting_mins * 60 and (first_eval is False):
-                break
-            continue
-
-        total_time = 0
-        first_eval = False
-
+    start = max(1, args.ckpt_start)
+    for i, cur_ckpt in enumerate(ckpt_list[start - 1:]):
+        cur_epoch_id = i + start
         model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
         model.cuda()
 
@@ -127,6 +116,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
             cfg, model, test_loader, cur_epoch_id, logger, dist_test=dist_test,
             result_dir=cur_result_dir, save_to_file=args.save_to_file
         )
+
 
         if cfg.LOCAL_RANK == 0:
             for key, val in tb_dict.items():
