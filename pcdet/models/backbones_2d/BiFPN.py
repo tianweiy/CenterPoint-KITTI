@@ -148,16 +148,15 @@ class BiFPN_Network_SkipConnections(nn.Module):
         
     def forward(self, in_5, in_4, in_3):
     
-        running_input = in_5
+        # running_input = in_5
         for i in range(self.num_blocks):
             inputs = [in_5, in_4, in_3]
             outs = list(self.layers[i](in_5, in_4, in_3))
-            
             for j in range(len(outs)):
                 outs[j] = self.final_convs[i][j](outs[j]) + inputs[j].to(device=self.device)
             in_5, in_4, in_3 = outs
-            running_input = inputs[0]
-        return in_5, in_4, in_3, running_input
+            # running_input = inputs[0]
+        return in_5, in_4, in_3 #,  running_input
 
 
     def is_same_spatial(self, x1, x2):
