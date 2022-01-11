@@ -93,7 +93,7 @@ def main():
         common_utils.set_random_seed(666)
 
     log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
-    log_name += "_lr" + str(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
+    log_name += "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
 
 
     output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
