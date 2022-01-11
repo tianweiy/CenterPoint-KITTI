@@ -114,8 +114,7 @@ class BiFPN_Network(nn.Module):
             self.layers.append(current)
         
         self.layers = nn.ModuleList(self.layers)
-        # self.bifpn_layers = nn.Sequential(*self.layers)
-        # print("####### params", self.num_of_params())
+        
         
     def forward(self, in_5, in_4, in_3):
 

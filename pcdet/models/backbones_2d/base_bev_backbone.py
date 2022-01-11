@@ -86,7 +86,7 @@ class BaseBEVBackbone(nn.Module):
 
             # If we have skip connections:
             
-            output_channels = num_filters[idx] * 3 # w/o_skip, output_channels --> the number of channels of the concatination of all 3 branches. 
+            output_channels = self.bifpn_sizes[-1] * 3 # w/o_skip, output_channels --> the number of channels of the concatination of all 3 branches. 
             if self.bifpn_skip:
                 output_channels = num_filters[idx]
                 # with_skip, output_channels --> It is the number of channels of the original input.
