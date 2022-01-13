@@ -51,7 +51,7 @@ def parse_config():
     parser.add_argument('--max_waiting_mins', type=int, default=0, help='max waiting minutes')
     parser.add_argument('--start_epoch', type=int, default=0, help='')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
-    parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
+    parser.add_argument('--set_size', type=float, default=None, help='Set percentage of dataset usage for training')
     parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
     parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
     parser.add_argument('--testmode', dest='testmode', action='store_true', help="Don't create another folder")
@@ -222,7 +222,8 @@ def main():
         ckpt_save_interval=args.ckpt_save_interval,
         max_ckpt_save_num=args.max_ckpt_save_num,
         merge_all_iters_to_one_epoch=args.merge_all_iters_to_one_epoch,
-        test_sampler=test_sampler
+        test_sampler=test_sampler,
+        config=cfg
     )
 
     logger.info('**********************End training %s/%s(%s)**********************\n\n\n'
