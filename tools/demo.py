@@ -16,7 +16,7 @@ from visual_utils import visualize_utils as V
 
 
 class DemoDataset(DatasetTemplate):
-    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, ext='.bin'):
+    def __init__(self, dataset_cfg, class_names, training=True, root_path=None, logger=None, ext='.bin', **kwargs):
         """
         Args:
             root_path:
@@ -28,6 +28,7 @@ class DemoDataset(DatasetTemplate):
         super().__init__(
             dataset_cfg=dataset_cfg, class_names=class_names, training=training, root_path=root_path, logger=logger
         )
+        self.args = kwargs
         self.root_path = root_path
         self.ext = ext
         data_file_list = glob.glob(str(root_path / f'*{self.ext}')) if self.root_path.is_dir() else [self.root_path]
@@ -63,6 +64,8 @@ def parse_config():
     parser.add_argument('--ckpt', type=str, default=None, help='specify the pretrained model')
     parser.add_argument('--ext', type=str, default='.bin', help='specify the extension of your point cloud data file')
     parser.add_argument('--sample_folder', type=str, default='test', help='Take demo sample from {test, train}')
+    parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
+    parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
     args = parser.parse_args()
 
     cfg_from_yaml_file(args.cfg_file, cfg)
@@ -77,7 +80,7 @@ def main():
     logger.info('-----------------Quick Demo of CenterPoint----------------------')
     demo_dataset = DemoDataset(
         dataset_cfg=cfg.DATA_CONFIG, class_names=cfg.CLASS_NAMES, training=False,
-        root_path=Path(args.data_path), ext=args.ext, logger=logger
+        root_path=Path(args.data_path), ext=args.ext, logger=logger, bifpn=args.bifpn, bifpn_skip=args.bifpn_skip
     )
     logger.info(f'Total number of samples: \t{len(demo_dataset)}')
 
