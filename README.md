@@ -30,3 +30,6 @@ Our papers \ Repos:
 2) BiFPN horizon Robotics: https://arxiv.org/abs/2006.15505
 3) BiFPN GitHub Repo: https://github.com/ViswanathaReddyGajjala/EfficientDet-Pytorch
 4) Metrics GitHub repo: https://github.com/rafaelpadilla/Object-Detection-Metrics
+
+Useful Links:
+1) GCP GPU Zones: https://cloud.google.com/compute/docs/gpus/gpu-regions-zones
