@@ -10,6 +10,7 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 from tensorboardX import SummaryWriter
+from memory_profiler import profile
 
 from pcdet.config import cfg, cfg_from_list, cfg_from_yaml_file, log_config_to_file
 from pcdet.datasets import build_dataloader
@@ -69,7 +70,9 @@ def parse_config():
         cfg_from_list(args.set_cfgs, cfg)
     return args, cfg
 
+# @profile
 def main():
+    torch.cuda.empty_cache()
     args, cfg = parse_config()
  
     if args.launcher == 'none':

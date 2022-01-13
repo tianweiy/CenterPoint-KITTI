@@ -9,7 +9,7 @@ def conv_block(in_channels, out_channels, kernel_size=3, padding=1, eps=1e-3, mo
          stride=stride, bias=bias),
         nn.BatchNorm2d(out_channels, eps=eps, momentum=momentum),
         nn.ReLU()
-    )
+    ).cuda()
 
 
 class BiFPN(nn.Module):
@@ -35,8 +35,8 @@ class BiFPN(nn.Module):
         self.p5_inp_conv = block(P5_channels, self.out_chn)
         self.p5_out_conv = block(self.out_chn, self.out_chn)
         
-        self.p5_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True)
-        self.p5_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True)
+        self.p5_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True, device=self.device)
+        self.p5_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True, device=self.device)
 
         # 4
         self.p4_inp_conv = block(P4_channels, self.out_chn)
@@ -49,7 +49,6 @@ class BiFPN(nn.Module):
         self.p4_out_w2 = torch.tensor(1, dtype=torch.float, requires_grad=True)
         self.p4_out_w3 = torch.tensor(1, dtype=torch.float, requires_grad=True)
         
-        
         # 3
         self.p3_inp_conv = block(P3_channels, self.out_chn)
         self.p3_out_conv = block(self.out_chn, self.out_chn)
@@ -61,6 +60,8 @@ class BiFPN(nn.Module):
         if self.block_num == 1:
             self.p4_upsample = nn.Upsample(scale_factor=2, mode='nearest')
             self.p3_downsample= nn.MaxPool2d(kernel_size=2)
+        
+        self.cuda()
         
     def forward(self, in_5, in_4, in_3):
 
@@ -110,10 +111,11 @@ class BiFPN_Network(nn.Module):
             if i > 0:
                 fpn_sizes = [out_channels[i - 1]] * 3
 
-            current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
+            current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1))
             self.layers.append(current)
         
         self.layers = nn.ModuleList(self.layers)
+        self.cuda()
         
         
     def forward(self, in_5, in_4, in_3):
@@ -144,10 +146,10 @@ class BiFPN_Network_SkipConnections(nn.Module):
 
 
         self.layers = nn.ModuleList(self.layers)
+        self.cuda()
                 # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):
-    
         # running_input = in_5
         for i in range(self.num_blocks):
             inputs = [in_5, in_4, in_3]
