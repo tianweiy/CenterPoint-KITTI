@@ -99,7 +99,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
         pass
     
     # tensorboard log
-    curr_folder = str("_batch" + str(args.batch_size) + "_set" + str(args.set_size) + "_bifpn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip" + "_lr" + "{:.2f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)))
+    curr_folder = str("_batch" + str(args.batch_size) + "_set" + str(args.set_size) + "_bifpn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip" + "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)))
     eval_output_dir = eval_output_dir / curr_folder
     if cfg.LOCAL_RANK == 0:
         tb_log = SummaryWriter(log_dir=str(eval_output_dir / ('tensorboard_%s' % cfg.DATA_CONFIG.DATA_SPLIT['test'])))
@@ -107,25 +107,26 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
     start = max(1, args.ckpt_start)
     for i, cur_ckpt in enumerate(ckpt_list[start - 1:]):
         cur_epoch_id = i + start
-        model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
-        model.cuda()
+        if i % 2 == 1:
+            model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
+            model.cuda()
 
-        # start evaluation
-        cur_result_dir = eval_output_dir / ('epoch_%s' % cur_epoch_id) / cfg.DATA_CONFIG.DATA_SPLIT['test']
-        tb_dict = eval_utils.eval_one_epoch(
-            cfg, model, test_loader, cur_epoch_id, logger, dist_test=dist_test,
-            result_dir=cur_result_dir, save_to_file=args.save_to_file
-        )
+            # start evaluation
+            cur_result_dir = eval_output_dir / ('epoch_%s' % cur_epoch_id) / cfg.DATA_CONFIG.DATA_SPLIT['test']
+            tb_dict = eval_utils.eval_one_epoch(
+                cfg, model, test_loader, cur_epoch_id, logger, dist_test=dist_test,
+                result_dir=cur_result_dir, save_to_file=args.save_to_file
+            )
 
 
-        if cfg.LOCAL_RANK == 0:
-            for key, val in tb_dict.items():
-                tb_log.add_scalar(key, val, cur_epoch_id)
+            if cfg.LOCAL_RANK == 0:
+                for key, val in tb_dict.items():
+                    tb_log.add_scalar(key, val, cur_epoch_id)
 
-        # record this epoch which has been evaluated
-        with open(ckpt_record_file, 'a') as f:
-            print('%s' % cur_epoch_id, file=f)
-        logger.info('Epoch %s has been evaluated' % cur_epoch_id)
+            # record this epoch which has been evaluated
+            with open(ckpt_record_file, 'a') as f:
+                print('%s' % cur_epoch_id, file=f)
+            logger.info('Epoch %s has been evaluated' % cur_epoch_id)
 
 
 def main():

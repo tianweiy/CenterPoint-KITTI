@@ -7,6 +7,7 @@ from torch.nn.utils import clip_grad_norm_
 import time
 
 
+
 def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_scheduler, accumulated_iter, optim_cfg,
                     rank, tbar, total_it_each_epoch, dataloader_iter, test_dataloader_iter, tb_log=None, leave_pbar=False, **kwargs):
 
@@ -37,10 +38,11 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
             tb_log.add_scalar('meta_data/learning_rate', cur_lr, accumulated_iter)
 
         model.train()
-        optimizer.zero_grad()
-
+        # optimizer.zero_grad() - Optimization 
+        for param in model.parameters():
+            param.grad = None
+       
         loss, tb_dict, disp_dict = model_func(model, batch)
-
 
         loss.backward()
 
@@ -74,30 +76,8 @@ def train_one_epoch(model, optimizer, train_loader, test_loader, model_func, lr_
         tb_log.add_scalar('time/one_batch_sec', time.time() - epoch_start, accumulated_iter)
         accumulated_iter += 1
 
-
-    #Print val loss:
-    if (kwargs['cur_epoch'] + 1) % 2 == 0 or kwargs['cur_epoch'] + 1 == kwargs.get("total_epochs", 0): 
-        
-        with torch.no_grad():
-            total = 0
-            test_dataloader_iter = iter(test_loader)
-            pbar = tqdm.tqdm(total=total_it_each_epoch, leave=leave_pbar, desc='val', dynamic_ncols=True)
-            for it in range(len(test_loader)):
-                val_iter += 1
-                batch_test = next(test_dataloader_iter)
-                val_loss, tb_dict, disp_dict = model_func(model, batch_test)
-                total += val_loss.item()
-                disp_dict.update({"val_loss": val_loss.item()})
-                pbar.set_postfix(dict(total_it=val_iter))
-                pbar.update()
-                tbar.set_postfix(disp_dict)
-                tbar.refresh()
-                tb_log.add_scalar('val/loss_per_step', val_loss, val_iter) 
-                
-            val_loss = total / len(test_loader)
-            tb_log.add_scalar('val/loss_per_epoch', val_loss, kwargs["cur_epoch"]) 
-            model.val_loss = val_loss
-        model.train()
+    
+    
         
     if rank == 0:
         pbar.close()
@@ -121,20 +101,19 @@ def train_model(model, optimizer, train_loader, test_loader, model_func, lr_sche
 
         dataloader_iter = iter(train_loader)
         test_dataloader_iter = iter(test_loader)
-        print(tbar)
+
         for cur_epoch in tbar:
             
-
             if train_sampler is not None:
                 train_sampler.set_epoch(cur_epoch)
                 if kwargs.get("test_sampler", None):
                     kwargs["test_sampler"].set_epoch(cur_epoch)
-
             # train one epoch
             if lr_warmup_scheduler is not None and cur_epoch < optim_cfg.WARMUP_EPOCH:
                 cur_scheduler = lr_warmup_scheduler
             else:
                 cur_scheduler = lr_scheduler
+            val_iter = accumulated_iter
             accumulated_iter = train_one_epoch(
                 model, optimizer, train_loader, test_loader, model_func,
                 lr_scheduler=cur_scheduler,
@@ -148,6 +127,29 @@ def train_model(model, optimizer, train_loader, test_loader, model_func, lr_sche
                 cur_epoch = cur_epoch,
                 total_epochs=total_epochs
             )
+
+            #Print val loss:
+            if (cur_epoch + 1) % 2 == 0 or cur_epoch + 1 == total_epochs: 
+                total = 0
+                test_dataloader_iter = iter(test_loader)
+                pbar = tqdm.tqdm(total=total_it_each_epoch, leave=(cur_epoch + 1 == total_epochs), desc='val', dynamic_ncols=True)
+                for it in range(len(test_loader)):
+                    val_iter += 1
+                    batch_test = next(test_dataloader_iter)
+                    model.eval()
+                    with torch.no_grad():
+                        _, dici = model_func(model, batch_test)
+                    model.train()
+                    val_loss = 1 - (dici.get("rcnn_0.5", 0) / max(dici.get("gt", 1), 1))
+                    total += val_loss
+                    pbar.set_postfix(dict(total_it=val_iter))
+                    pbar.update()
+                    tbar.set_postfix({"val_loss": val_loss})
+                    tbar.refresh()
+                    tb_log.add_scalar('val/loss_per_step', val_loss, val_iter) 
+                val_loss = total / (len(test_loader) // max(total_epochs, 1))
+                tb_log.add_scalar('val/loss_per_epoch', val_loss, cur_epoch) 
+                model.val_loss = val_loss
 
             # save trained model
             trained_epoch = cur_epoch + 1
