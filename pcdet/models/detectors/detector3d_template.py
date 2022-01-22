@@ -84,7 +84,6 @@ class Detector3DTemplate(nn.Module):
         map_to_bev_module = map_to_bev.__all__[self.model_cfg.MAP_TO_BEV.NAME](
             model_cfg=self.model_cfg.MAP_TO_BEV,
             grid_size=model_info_dict['grid_size'],
-            # bifpn=self.dataset.args.get('bifpn', [])
             
         )
         model_info_dict['module_list'].append(map_to_bev_module)
