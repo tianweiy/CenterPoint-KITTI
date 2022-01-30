@@ -33,3 +33,9 @@ Our papers \ Repos:
 
 Useful Links:
 1) GCP GPU Zones: https://cloud.google.com/compute/docs/gpus/gpu-regions-zones
+
+GCP VM Settings:
+- Intel N1-highmem-4 (4vCPU, 26 GB Memory)
+- Nvidia Tesla T4
+- 500 GB SSD
+
