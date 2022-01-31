@@ -4,7 +4,7 @@ import glob
 import os
 from pathlib import Path
 from numpy.core.records import array
-from test import repeat_eval_ckpt
+from test import repeat_eval_ckpt, find_next_folder_name
 
 import torch
 import torch.distributed as dist
@@ -20,26 +20,15 @@ from train_utils.optimization import build_optimizer, build_scheduler
 from train_utils.train_utils import train_model
 import shutil
 
-def find_next_folder_name(arr):
-    """
-    For saving the relevant checkpoints and tensorboard graphs, we need to distinguish between the different runs.
-    Args:
-        arr ([strings]): [An array of the all the existing runs under a specific configutrtion. For example, a run could be
-        batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030, and under this folder could be many runs, to examine different hyparamters changes,
-        that are not listed in the name. Thus, we could have subfolders 0, 1, 2.... for each individula run. This way we do not OVERRIDE the existing
-        runs.]
-    Returns:
-        [int]: [Next possible run index.]
-    """    
-    n = len(arr)
-    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
-    for i in range(n):
-        if i not in exsits:
-            n = i
-            break
-    return str(n)
-
 def create_paths(args):
+    """[Those paths are used for saving the checkpoints and tensorboard files. In order to distinguish betweehn the]
+
+    Args:
+        args ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
     log_name += "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
 
@@ -80,7 +69,7 @@ def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
     parser.add_argument('--cfg_file', type=str, default=None, help='specify the config for training')
 
-    parser.add_argument('--batch_size', type=int, default=None, required=False, help='batch size for training')
+    parser.add_argument('--batch_size', type=int, default=4, required=False, help='batch size for training')
     parser.add_argument('--epochs', type=int, default=None, required=False, help='number of epochs to train for')
     parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
@@ -104,7 +93,6 @@ def parse_config():
     parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
     parser.add_argument('--testmode', dest='testmode', action='store_true', help="Don't create another folder")
     parser.add_argument('--eval', type=bool, default=False, help='If to do evalutation at the end')
-    # parser.add_argument("--clear", type=bool, default=False, help)
     parser.add_argument('--clear', dest='clear', action='store_true')
 
     args = parser.parse_args()
@@ -183,6 +171,8 @@ def main():
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model.cuda()
 
+    if args.ckpt is not None:
+        cfg.OPTIMIZATION.DIV_FACTOR = 20
     optimizer = build_optimizer(model, cfg.OPTIMIZATION)
 
     # load checkpoint if it is possible
@@ -195,6 +185,7 @@ def main():
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1
+        
     else:
         ckpt_list = glob.glob(str(config_ckpt / '*checkpoint_epoch_*.pth'))
         if len(ckpt_list) > 0:
@@ -224,6 +215,7 @@ def main():
         bifpn=args.bifpn,
         training=False
     )
+
     # -----------------------start training--------------------------
     logger.info('**********************Start training %s/%s(%s)**********************'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
@@ -254,7 +246,7 @@ def main():
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
     # Original work evaluates all the ckpts at the end of the training.
-    # We decided to that indivudialy with useing the train.py
+    # We decided to that indivudialy with using the train.py
     if args.eval:
 
         test_set, test_loader, test_sampler = build_dataloader(

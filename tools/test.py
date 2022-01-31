@@ -54,6 +54,25 @@ def parse_config():
 
     return args, cfg
 
+def find_next_folder_name(arr):
+    """
+    For saving the relevant checkpoints and tensorboard graphs, we need to distinguish between the different runs.
+    Args:
+        arr ([strings]): [An array of the all the existing runs under a specific configutrtion. For example, a run could be
+        batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030, and under this folder could be many runs, to examine different hyparamters changes,
+        that are not listed in the name. Thus, we could have subfolders 0, 1, 2.... for each individula run. This way we do not OVERRIDE the existing
+        runs.]
+    Returns:
+        [int]: [Next possible run index.]
+    """    
+    n = len(arr)
+    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
+    for i in range(n):
+        if i not in exsits:
+            n = i
+            break
+    return str(n)
+
 
 def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
     # load checkpoint
@@ -94,16 +113,20 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
     ckpt_list = sorted(ckpt_list, key=lambda c: int(c.split(".pth")[0].split("_")[-1]))  # Sort the checkpoints
     with open(ckpt_record_file, 'a'):
         pass
-    
+
+    # print(ckpt_list)
     # tensorboard log
+
     curr_folder = str("_batch" + str(args.batch_size) + "_set" + str(args.set_size) + "_bifpn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip" + "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)))
-    eval_output_dir = eval_output_dir / curr_folder
+    eval_output_dir = eval_output_dir / curr_folder / find_next_folder_name(os.listdir(eval_output_dir))
     if cfg.LOCAL_RANK == 0:
         tb_log = SummaryWriter(log_dir=str(eval_output_dir / ('tensorboard_%s' % cfg.DATA_CONFIG.DATA_SPLIT['test'])))
 
-    start = max(1, args.ckpt_start)
-    for i, cur_ckpt in enumerate(ckpt_list[start - 1:]):
-        cur_epoch_id = i + start
+    first =  int(ckpt_list[0].split(".pth")[0].split("_")[-1])
+    print(first, len(ckpt_list), args.ckpt_start)
+    for i, cur_ckpt in enumerate(ckpt_list[args.ckpt_start - first:]):
+
+        cur_epoch_id = i + args.ckpt_start
         # if i % 2 == 1:
         model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
         model.cuda()
@@ -136,6 +159,9 @@ def main():
             args.tcp_port, args.local_rank, backend='nccl'
         )
         dist_test = True
+    
+    assert args.ckpt_start >= 0, "You must specify a ckpt number to start from --> e.g. --ckpt_start 100"
+        
 
     if args.batch_size is None:
         args.batch_size = cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU
@@ -184,10 +210,11 @@ def main():
         bifpn=args.bifpn,
         bifpn_skip=args.bifpn_skip,
     )
-
+    
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
     with torch.no_grad():
         if args.eval_all:
+           
             repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=dist_test)
         else:
             eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=dist_test)

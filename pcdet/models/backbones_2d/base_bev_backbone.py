@@ -86,7 +86,7 @@ class BaseBEVBackbone(nn.Module):
             bifpn = BiFPN_Network_SkipConnections if self.bifpn_skip else BiFPN_Network
             self.bifpn = bifpn([num_filters[idx]] * 3, out_channels=self.bifpn_sizes)
             self.bifpn.to(self.bifpn.device)     
-            output_channels = self.bifpn_sizes[-1] * 3 # Last_blockdeals the concatanted output of the network.
+            output_channels = num_filters[idx] * 3 if self.bifpn_skip else self.bifpn_sizes[-1] * 3 # Last_blockdeals the concatanted output of the network.
             self.last_block = nn.Sequential(
                 nn.Conv2d(output_channels, *self.model_cfg.NUM_FILTERS, kernel_size=1),
                 nn.BatchNorm2d(*self.model_cfg.NUM_FILTERS),

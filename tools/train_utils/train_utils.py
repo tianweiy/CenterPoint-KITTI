@@ -1,5 +1,6 @@
 import glob
 import os
+import numpy
 
 import torch
 import tqdm
@@ -15,7 +16,7 @@ def val_one_epoch(model, test_loader, model_func, cur_epoch, total_epochs, total
         tbar ([type]): [For printing]
         tb_log ([type]): [For tensorboard]
     """
-    total = 0
+    total = []
     test_dataloader_iter = iter(test_loader)
     pbar = tqdm.tqdm(total=total_it_each_epoch, leave=(cur_epoch + 1 == total_epochs), desc='val', dynamic_ncols=True)
     for it in range(len(test_loader)):
@@ -23,16 +24,17 @@ def val_one_epoch(model, test_loader, model_func, cur_epoch, total_epochs, total
         batch_test = next(test_dataloader_iter)
         model.eval()
         with torch.no_grad():
-            _, dici = model_func(model, batch_test)
+            res, _ = model_func(model, batch_test)
         model.train()
-        val_loss = 1 - (dici.get("rcnn_0.5", 0) / max(dici.get("gt", 1), 1))
-        total += val_loss
+        preds = [torch.mean(z["pred_scores"]).item() for z in res if z["pred_scores"].nelement()]
+        val_loss = 1 - numpy.mean(preds) if len(preds) > 0 else 1
+        total.append(val_loss)    
         pbar.set_postfix(dict(total_it=val_iter))
         pbar.update()
         tbar.set_postfix({"val_loss": val_loss})
         tbar.refresh()
         tb_log.add_scalar('val/loss_per_step', val_loss, val_iter) 
-    val_loss = total / (len(test_loader) // max(total_epochs, 1))
+    val_loss = numpy.mean(total) if len(total) > 0 else model.val_loss
     tb_log.add_scalar('val/loss_per_epoch', val_loss, cur_epoch) 
     model.val_loss = val_loss
     
