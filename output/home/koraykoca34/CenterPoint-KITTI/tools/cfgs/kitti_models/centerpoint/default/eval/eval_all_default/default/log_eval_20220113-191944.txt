@@ -1,0 +1,939 @@
+2022-01-13 19:19:44,980   INFO  **********************Start logging**********************
+2022-01-13 19:19:44,980   INFO  CUDA_VISIBLE_DEVICES=ALL
+2022-01-13 19:19:44,980   INFO  cfg_file         /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml
+2022-01-13 19:19:44,981   INFO  batch_size       4
+2022-01-13 19:19:44,981   INFO  workers          4
+2022-01-13 19:19:44,981   INFO  extra_tag        default
+2022-01-13 19:19:44,981   INFO  ckpt             None
+2022-01-13 19:19:44,981   INFO  launcher         none
+2022-01-13 19:19:44,982   INFO  tcp_port         18888
+2022-01-13 19:19:44,982   INFO  local_rank       0
+2022-01-13 19:19:44,982   INFO  set_cfgs         None
+2022-01-13 19:19:44,982   INFO  max_waiting_mins 30
+2022-01-13 19:19:44,982   INFO  start_epoch      0
+2022-01-13 19:19:44,982   INFO  eval_tag         default
+2022-01-13 19:19:44,982   INFO  eval_all         True
+2022-01-13 19:19:44,982   INFO  ckpt_dir         /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0
+2022-01-13 19:19:44,982   INFO  save_to_file     False
+2022-01-13 19:19:44,982   INFO  set_size         50
+2022-01-13 19:19:44,982   INFO  bifpn            [128, 128]
+2022-01-13 19:19:44,982   INFO  bifpn_skip       False
+2022-01-13 19:19:44,982   INFO  ckpt_start       40
+2022-01-13 19:19:44,983   INFO  cfg.ROOT_DIR: /home/koraykoca34/CenterPoint-KITTI
+2022-01-13 19:19:44,983   INFO  cfg.LOCAL_RANK: 0
+2022-01-13 19:19:44,983   INFO  cfg.CLASS_NAMES: ['Car', 'Pedestrian', 'Cyclist']
+2022-01-13 19:19:44,983   INFO  
+cfg.DATA_CONFIG = edict()
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.DATASET: KittiDataset
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.DATA_PATH: ../data/kitti
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.POINT_CLOUD_RANGE: [0, -40, -3, 70.4, 40, 1]
+2022-01-13 19:19:44,983   INFO  
+cfg.DATA_CONFIG.DATA_SPLIT = edict()
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.DATA_SPLIT.train: train
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.DATA_SPLIT.test: val
+2022-01-13 19:19:44,983   INFO  
+cfg.DATA_CONFIG.INFO_PATH = edict()
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.INFO_PATH.train: ['kitti_infos_train.pkl']
+2022-01-13 19:19:44,983   INFO  cfg.DATA_CONFIG.INFO_PATH.test: ['kitti_infos_val.pkl']
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.INFO_PATH.demo: ['kitti_infos_test.pkl']
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.FOV_POINTS_ONLY: True
+2022-01-13 19:19:44,984   INFO  
+cfg.DATA_CONFIG.DATA_AUGMENTOR = edict()
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.DISABLE_AUG_LIST: ['placeholder']
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.AUG_CONFIG_LIST: [{'NAME': 'gt_sampling', 'USE_ROAD_PLANE': True, 'DB_INFO_PATH': ['kitti_dbinfos_train.pkl'], 'PREPARE': {'filter_by_min_points': ['Car:5', 'Pedestrian:5', 'Cyclist:5'], 'filter_by_difficulty': [-1]}, 'SAMPLE_GROUPS': ['Car:20', 'Pedestrian:15', 'Cyclist:15'], 'NUM_POINT_FEATURES': 4, 'DATABASE_WITH_FAKELIDAR': False, 'REMOVE_EXTRA_WIDTH': [0.0, 0.0, 0.0], 'LIMIT_WHOLE_SCENE': True}, {'NAME': 'random_world_flip', 'ALONG_AXIS_LIST': ['x']}, {'NAME': 'random_world_rotation', 'WORLD_ROT_ANGLE': [-0.78539816, 0.78539816]}, {'NAME': 'random_world_scaling', 'WORLD_SCALE_RANGE': [0.95, 1.05]}]
+2022-01-13 19:19:44,984   INFO  
+cfg.DATA_CONFIG.POINT_FEATURE_ENCODING = edict()
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.encoding_type: absolute_coordinates_encoding
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.used_feature_list: ['x', 'y', 'z', 'intensity']
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.src_feature_list: ['x', 'y', 'z', 'intensity']
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG.DATA_PROCESSOR: [{'NAME': 'mask_points_and_boxes_outside_range', 'REMOVE_OUTSIDE_BOXES': True}, {'NAME': 'shuffle_points', 'SHUFFLE_ENABLED': {'train': True, 'test': False}}, {'NAME': 'transform_points_to_voxels', 'VOXEL_SIZE': [0.05, 0.05, 0.1], 'MAX_POINTS_PER_VOXEL': 5, 'MAX_NUMBER_OF_VOXELS': {'train': 16000, 'test': 40000}}]
+2022-01-13 19:19:44,984   INFO  cfg.DATA_CONFIG._BASE_CONFIG_: cfgs/dataset_configs/kitti_dataset.yaml
+2022-01-13 19:19:44,985   INFO  
+cfg.MODEL = edict()
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.NAME: CenterPoint
+2022-01-13 19:19:44,985   INFO  
+cfg.MODEL.VFE = edict()
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.VFE.NAME: MeanVFE
+2022-01-13 19:19:44,985   INFO  
+cfg.MODEL.BACKBONE_3D = edict()
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.BACKBONE_3D.NAME: VoxelBackBone8x
+2022-01-13 19:19:44,985   INFO  
+cfg.MODEL.MAP_TO_BEV = edict()
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.MAP_TO_BEV.NAME: HeightCompression
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.MAP_TO_BEV.NUM_BEV_FEATURES: 256
+2022-01-13 19:19:44,985   INFO  
+cfg.MODEL.BACKBONE_2D = edict()
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.BACKBONE_2D.NAME: BaseBEVBackbone
+2022-01-13 19:19:44,985   INFO  cfg.MODEL.BACKBONE_2D.LAYER_NUMS: [5]
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.BACKBONE_2D.LAYER_STRIDES: [1]
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.BACKBONE_2D.NUM_FILTERS: [128]
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.BACKBONE_2D.UPSAMPLE_STRIDES: [2]
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.BACKBONE_2D.NUM_UPSAMPLE_FILTERS: [256]
+2022-01-13 19:19:44,986   INFO  
+cfg.MODEL.DENSE_HEAD = edict()
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.NAME: CenterHead
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.CLASS_AGNOSTIC: False
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.USE_DIRECTION_CLASSIFIER: False
+2022-01-13 19:19:44,986   INFO  
+cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG = edict()
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MAX_OBJS: 100
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.VOXEL_SIZE: [0.05, 0.05, 0.1]
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.OUT_SIZE_FACTOR: 4
+2022-01-13 19:19:44,986   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.GAUSSIAN_OVERLAP: 0.1
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MIN_RADIUS: 2
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.BOX_CODER: ResidualCoder
+2022-01-13 19:19:44,987   INFO  
+cfg.MODEL.DENSE_HEAD.LOSS_CONFIG = edict()
+2022-01-13 19:19:44,987   INFO  
+cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS = edict()
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.cls_weight: 1.0
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.loc_weight: 2.0
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+2022-01-13 19:19:44,987   INFO  
+cfg.MODEL.POST_PROCESSING = edict()
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
+2022-01-13 19:19:44,987   INFO  cfg.MODEL.POST_PROCESSING.SCORE_THRESH: 0.1
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.OUTPUT_RAW_SCORE: False
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.EVAL_METRIC: kitti
+2022-01-13 19:19:44,988   INFO  
+cfg.MODEL.POST_PROCESSING.NMS_CONFIG = edict()
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.MULTI_CLASSES_NMS: False
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_TYPE: nms_gpu
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_THRESH: 0.01
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_PRE_MAXSIZE: 4096
+2022-01-13 19:19:44,988   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_POST_MAXSIZE: 500
+2022-01-13 19:19:44,988   INFO  
+cfg.OPTIMIZATION = edict()
+2022-01-13 19:19:44,988   INFO  cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU: 8
+2022-01-13 19:19:44,988   INFO  cfg.OPTIMIZATION.NUM_EPOCHS: 80
+2022-01-13 19:19:44,988   INFO  cfg.OPTIMIZATION.OPTIMIZER: adam_onecycle
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.LR: 0.003
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.WEIGHT_DECAY: 0.01
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.MOMENTUM: 0.9
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.MOMS: [0.95, 0.85]
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.PCT_START: 0.4
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.DIV_FACTOR: 10
+2022-01-13 19:19:44,989   INFO  cfg.OPTIMIZATION.DECAY_STEP_LIST: [35, 45]
+2022-01-13 19:19:44,990   INFO  cfg.OPTIMIZATION.LR_DECAY: 0.1
+2022-01-13 19:19:44,990   INFO  cfg.OPTIMIZATION.LR_CLIP: 1e-07
+2022-01-13 19:19:44,990   INFO  cfg.OPTIMIZATION.LR_WARMUP: False
+2022-01-13 19:19:44,990   INFO  cfg.OPTIMIZATION.WARMUP_EPOCH: 1
+2022-01-13 19:19:44,990   INFO  cfg.OPTIMIZATION.GRAD_NORM_CLIP: 10
+2022-01-13 19:19:44,990   INFO  cfg.TAG: centerpoint
+2022-01-13 19:19:44,990   INFO  cfg.EXP_GROUP_PATH: home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models
+2022-01-13 19:19:45,076   INFO  Loading KITTI dataset
+2022-01-13 19:19:45,222   INFO  Total samples for KITTI dataset: 1884
+2022-01-13 19:19:49,527   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_40.pth to GPU
+2022-01-13 19:19:49,773   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:19:49,999   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:19:50,007   INFO  *************** EPOCH 40 EVALUATION *****************
+2022-01-13 19:22:19,868   INFO  *************** Performance of EPOCH 40 *****************
+2022-01-13 19:22:19,869   INFO  Generate label finished(sec_per_example: 0.0795 second).
+2022-01-13 19:22:19,869   INFO  recall_rcnn_0.3: 0.935275
+2022-01-13 19:22:19,869   INFO  recall_rcnn_0.5: 0.875058
+2022-01-13 19:22:19,869   INFO  recall_rcnn_0.7: 0.618123
+2022-01-13 19:22:19,871   INFO  Average predicted number of objects(1884 samples): 49.834
+2022-01-13 19:22:53,035   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.4527, 88.2224, 87.2605
+bev  AP:89.4597, 83.7641, 82.4061
+3d   AP:86.2391, 75.7323, 71.7518
+aos  AP:90.42, 88.04, 86.99
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.3596, 90.2969, 88.0461
+bev  AP:91.9942, 86.1971, 84.2054
+3d   AP:87.2933, 75.3588, 72.8543
+aos  AP:95.32, 90.09, 87.78
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.4527, 88.2224, 87.2605
+bev  AP:90.4268, 88.7966, 88.3383
+3d   AP:90.4268, 88.6443, 88.0676
+aos  AP:90.42, 88.04, 86.99
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.3596, 90.2969, 88.0461
+bev  AP:95.3466, 92.8653, 90.6366
+3d   AP:95.3165, 90.9231, 90.2642
+aos  AP:95.32, 90.09, 87.78
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:52.4021, 50.8366, 49.2434
+bev  AP:51.2762, 48.9558, 45.8230
+3d   AP:47.1235, 44.1081, 42.2841
+aos  AP:50.60, 48.85, 47.25
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:51.0754, 49.2360, 47.8927
+bev  AP:50.6579, 47.4649, 44.6545
+3d   AP:45.8742, 42.5375, 39.5837
+aos  AP:49.11, 47.00, 45.68
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:52.4021, 50.8366, 49.2434
+bev  AP:58.7074, 57.0369, 55.6877
+3d   AP:58.5121, 56.6877, 55.3152
+aos  AP:50.60, 48.85, 47.25
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:51.0754, 49.2360, 47.8927
+bev  AP:58.2583, 56.4150, 54.7505
+3d   AP:58.0819, 55.9835, 54.3618
+aos  AP:49.11, 47.00, 45.68
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:66.2953, 59.1849, 56.8760
+bev  AP:59.2574, 51.1696, 47.7746
+3d   AP:58.9116, 49.7526, 46.9335
+aos  AP:66.20, 59.05, 56.73
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:67.3671, 58.2402, 55.6674
+bev  AP:59.1395, 49.3313, 46.5398
+3d   AP:58.6781, 48.2613, 45.4701
+aos  AP:67.27, 58.09, 55.52
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:66.2953, 59.1849, 56.8760
+bev  AP:61.4600, 53.7723, 51.8181
+3d   AP:61.4600, 53.7723, 51.8181
+aos  AP:66.20, 59.05, 56.73
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:67.3671, 58.2402, 55.6674
+bev  AP:62.0793, 52.5795, 50.1758
+3d   AP:62.0793, 52.5795, 50.1758
+aos  AP:67.27, 58.09, 55.52
+
+2022-01-13 19:22:53,039   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_40/val
+2022-01-13 19:22:53,039   INFO  ****************Evaluation done.*****************
+2022-01-13 19:22:53,062   INFO  Epoch 40 has been evaluated
+2022-01-13 19:22:53,062   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_41.pth to GPU
+2022-01-13 19:22:53,305   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:22:53,648   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:22:53,651   INFO  *************** EPOCH 41 EVALUATION *****************
+2022-01-13 19:25:24,676   INFO  *************** Performance of EPOCH 41 *****************
+2022-01-13 19:25:24,679   INFO  Generate label finished(sec_per_example: 0.0802 second).
+2022-01-13 19:25:24,679   INFO  recall_rcnn_0.3: 0.938280
+2022-01-13 19:25:24,679   INFO  recall_rcnn_0.5: 0.873093
+2022-01-13 19:25:24,679   INFO  recall_rcnn_0.7: 0.625751
+2022-01-13 19:25:24,681   INFO  Average predicted number of objects(1884 samples): 15.938
+2022-01-13 19:25:36,528   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.7313, 89.1789, 88.1612
+bev  AP:89.7970, 86.9303, 84.1767
+3d   AP:86.1829, 77.0313, 73.3246
+aos  AP:90.70, 89.04, 87.92
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.8887, 91.6661, 89.1667
+bev  AP:92.5392, 88.1912, 85.5278
+3d   AP:87.4779, 77.8995, 74.0122
+aos  AP:95.85, 91.51, 88.92
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.7313, 89.1789, 88.1612
+bev  AP:90.6498, 89.5364, 89.0503
+3d   AP:90.6498, 89.5043, 88.9615
+aos  AP:90.70, 89.04, 87.92
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.8887, 91.6661, 89.1667
+bev  AP:95.8728, 94.0952, 91.8114
+3d   AP:95.8450, 93.4485, 91.6125
+aos  AP:95.85, 91.51, 88.92
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:76.9741, 72.3048, 68.7899
+bev  AP:64.2955, 62.1614, 58.3495
+3d   AP:58.0384, 54.2646, 50.7129
+aos  AP:75.10, 70.13, 66.59
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:77.7217, 73.6171, 69.6301
+bev  AP:64.4538, 61.7603, 58.0231
+3d   AP:56.2330, 53.4816, 49.1260
+aos  AP:75.67, 71.17, 67.09
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:76.9741, 72.3048, 68.7899
+bev  AP:78.8751, 76.4865, 73.4042
+3d   AP:78.8751, 76.4546, 73.3698
+aos  AP:75.10, 70.13, 66.59
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:77.7217, 73.6171, 69.6301
+bev  AP:80.5289, 77.7666, 74.5140
+3d   AP:80.5269, 77.7197, 74.4492
+aos  AP:75.67, 71.17, 67.09
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:88.1966, 81.7889, 78.1541
+bev  AP:79.0075, 66.2384, 65.0556
+3d   AP:74.0643, 62.4439, 59.2741
+aos  AP:87.98, 81.44, 77.86
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:92.9368, 83.3307, 79.9407
+bev  AP:79.3780, 67.2657, 64.8939
+3d   AP:73.8168, 61.4601, 58.5942
+aos  AP:92.63, 82.98, 79.61
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:88.1966, 81.7889, 78.1541
+bev  AP:84.2971, 73.1586, 70.3339
+3d   AP:84.2971, 73.1586, 70.3339
+aos  AP:87.98, 81.44, 77.86
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:92.9368, 83.3307, 79.9407
+bev  AP:88.3422, 74.4641, 71.4704
+3d   AP:88.3422, 74.4641, 71.4704
+aos  AP:92.63, 82.98, 79.61
+
+2022-01-13 19:25:36,531   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_41/val
+2022-01-13 19:25:36,531   INFO  ****************Evaluation done.*****************
+2022-01-13 19:25:36,559   INFO  Epoch 41 has been evaluated
+2022-01-13 19:25:36,559   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_42.pth to GPU
+2022-01-13 19:25:36,792   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:25:37,018   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:25:37,021   INFO  *************** EPOCH 42 EVALUATION *****************
+2022-01-13 19:28:07,739   INFO  *************** Performance of EPOCH 42 *****************
+2022-01-13 19:28:07,740   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:28:07,740   INFO  recall_rcnn_0.3: 0.929843
+2022-01-13 19:28:07,740   INFO  recall_rcnn_0.5: 0.867083
+2022-01-13 19:28:07,740   INFO  recall_rcnn_0.7: 0.607490
+2022-01-13 19:28:07,742   INFO  Average predicted number of objects(1884 samples): 49.089
+2022-01-13 19:28:26,889   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.3315, 87.9078, 86.5327
+bev  AP:89.1868, 82.7401, 79.0607
+3d   AP:85.6896, 75.1386, 72.0341
+aos  AP:90.31, 87.76, 86.30
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.2769, 89.7915, 87.9189
+bev  AP:93.2913, 84.9741, 82.6737
+3d   AP:86.3965, 75.2268, 72.6499
+aos  AP:95.25, 89.63, 87.68
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.3315, 87.9078, 86.5327
+bev  AP:93.9017, 88.6870, 88.2486
+3d   AP:93.8055, 88.5472, 87.9780
+aos  AP:90.31, 87.76, 86.30
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.2769, 89.7915, 87.9189
+bev  AP:96.7165, 92.6692, 90.8939
+3d   AP:96.3320, 90.9271, 90.3159
+aos  AP:95.25, 89.63, 87.68
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:52.2460, 50.5052, 48.4068
+bev  AP:51.5750, 49.0135, 46.0033
+3d   AP:46.3766, 44.2716, 41.8205
+aos  AP:50.65, 48.69, 46.56
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:51.1843, 49.0361, 46.8110
+bev  AP:50.5159, 47.6795, 44.4657
+3d   AP:44.7704, 42.7241, 39.2451
+aos  AP:49.35, 47.01, 44.67
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:52.2460, 50.5052, 48.4068
+bev  AP:58.9853, 57.4986, 56.0323
+3d   AP:58.8333, 57.2696, 55.6730
+aos  AP:50.65, 48.69, 46.56
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:51.1843, 49.0361, 46.8110
+bev  AP:58.7553, 57.0931, 55.2391
+3d   AP:58.5697, 56.7345, 54.7818
+aos  AP:49.35, 47.01, 44.67
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:68.2464, 58.8642, 56.3323
+bev  AP:62.3363, 52.6471, 49.3558
+3d   AP:59.9415, 48.9489, 46.8273
+aos  AP:68.11, 58.69, 56.15
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:69.3923, 58.7123, 56.1430
+bev  AP:62.4956, 50.8879, 48.5291
+3d   AP:59.6530, 47.7742, 45.3161
+aos  AP:69.25, 58.52, 55.96
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:68.2464, 58.8642, 56.3323
+bev  AP:63.7760, 53.8183, 51.4177
+3d   AP:63.7760, 53.8183, 51.4177
+aos  AP:68.11, 58.69, 56.15
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:69.3923, 58.7123, 56.1430
+bev  AP:64.3876, 52.8850, 50.4850
+3d   AP:64.3876, 52.8850, 50.4850
+aos  AP:69.25, 58.52, 55.96
+
+2022-01-13 19:28:26,891   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_42/val
+2022-01-13 19:28:26,891   INFO  ****************Evaluation done.*****************
+2022-01-13 19:28:26,916   INFO  Epoch 42 has been evaluated
+2022-01-13 19:28:26,918   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_43.pth to GPU
+2022-01-13 19:28:27,158   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:28:27,508   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:28:27,511   INFO  *************** EPOCH 43 EVALUATION *****************
+2022-01-13 19:30:58,216   INFO  *************** Performance of EPOCH 43 *****************
+2022-01-13 19:30:58,218   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:30:58,218   INFO  recall_rcnn_0.3: 0.936546
+2022-01-13 19:30:58,218   INFO  recall_rcnn_0.5: 0.877138
+2022-01-13 19:30:58,218   INFO  recall_rcnn_0.7: 0.639968
+2022-01-13 19:30:58,220   INFO  Average predicted number of objects(1884 samples): 15.099
+2022-01-13 19:31:09,378   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:95.0203, 89.3242, 88.5683
+bev  AP:89.7560, 87.3963, 84.0991
+3d   AP:86.8165, 77.4023, 75.8415
+aos  AP:94.98, 89.21, 88.35
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.6356, 91.9422, 91.0895
+bev  AP:94.1608, 88.1991, 85.6658
+3d   AP:88.4554, 78.7201, 75.9435
+aos  AP:97.60, 91.82, 90.85
+Car AP@0.70, 0.50, 0.50:
+bbox AP:95.0203, 89.3242, 88.5683
+bev  AP:94.9869, 89.5690, 89.0791
+3d   AP:94.9335, 89.4903, 88.9594
+aos  AP:94.98, 89.21, 88.35
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.6356, 91.9422, 91.0895
+bev  AP:97.6490, 94.3330, 93.7202
+3d   AP:97.5702, 94.1363, 91.7158
+aos  AP:97.60, 91.82, 90.85
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:78.7004, 74.0227, 70.3904
+bev  AP:67.1212, 64.3187, 60.3330
+3d   AP:61.6037, 57.9646, 54.6858
+aos  AP:76.84, 71.51, 67.49
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:79.6308, 75.2957, 71.3381
+bev  AP:68.0875, 64.2180, 59.8348
+3d   AP:59.5899, 57.0431, 53.0837
+aos  AP:77.62, 72.49, 68.16
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:78.7004, 74.0227, 70.3904
+bev  AP:80.5988, 78.2075, 75.4438
+3d   AP:80.5917, 78.1645, 75.3415
+aos  AP:76.84, 71.51, 67.49
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:79.6308, 75.2957, 71.3381
+bev  AP:82.4972, 79.9613, 76.5461
+3d   AP:82.4883, 79.8104, 76.4116
+aos  AP:77.62, 72.49, 68.16
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:88.0154, 79.5068, 75.0362
+bev  AP:79.1452, 66.3267, 63.9699
+3d   AP:77.5312, 64.1625, 60.2591
+aos  AP:87.85, 79.28, 74.83
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:93.2759, 81.1678, 77.0235
+bev  AP:81.0267, 66.1878, 63.2361
+3d   AP:78.1955, 63.2885, 60.4233
+aos  AP:93.10, 80.91, 76.79
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:88.0154, 79.5068, 75.0362
+bev  AP:83.3621, 72.7585, 69.7508
+3d   AP:83.3621, 72.7585, 69.7508
+aos  AP:87.85, 79.28, 74.83
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:93.2759, 81.1678, 77.0235
+bev  AP:88.1524, 74.0021, 70.9645
+3d   AP:88.1524, 74.0021, 70.9645
+aos  AP:93.10, 80.91, 76.79
+
+2022-01-13 19:31:09,380   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_43/val
+2022-01-13 19:31:09,380   INFO  ****************Evaluation done.*****************
+2022-01-13 19:31:09,402   INFO  Epoch 43 has been evaluated
+2022-01-13 19:31:09,403   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_44.pth to GPU
+2022-01-13 19:31:09,657   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:31:09,968   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:31:09,971   INFO  *************** EPOCH 44 EVALUATION *****************
+2022-01-13 19:33:40,770   INFO  *************** Performance of EPOCH 44 *****************
+2022-01-13 19:33:40,771   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:33:40,771   INFO  recall_rcnn_0.3: 0.932270
+2022-01-13 19:33:40,771   INFO  recall_rcnn_0.5: 0.871937
+2022-01-13 19:33:40,772   INFO  recall_rcnn_0.7: 0.621012
+2022-01-13 19:33:40,773   INFO  Average predicted number of objects(1884 samples): 45.424
+2022-01-13 19:33:58,902   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:90.3915, 88.2425, 87.0815
+bev  AP:89.5398, 82.7840, 82.6379
+3d   AP:86.3231, 76.1245, 71.9687
+aos  AP:90.37, 88.11, 86.87
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:95.2370, 90.3952, 88.0793
+bev  AP:93.4656, 85.3618, 84.4311
+3d   AP:88.1684, 75.8647, 73.0813
+aos  AP:95.21, 90.25, 87.85
+Car AP@0.70, 0.50, 0.50:
+bbox AP:90.3915, 88.2425, 87.0815
+bev  AP:93.6476, 88.9531, 88.3748
+3d   AP:90.4274, 88.7859, 88.0817
+aos  AP:90.37, 88.11, 86.87
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:95.2370, 90.3952, 88.0793
+bev  AP:96.2482, 92.9407, 90.8058
+3d   AP:95.0826, 91.1227, 90.3750
+aos  AP:95.21, 90.25, 87.85
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:52.6807, 51.1713, 49.4696
+bev  AP:51.3889, 49.4612, 46.1245
+3d   AP:48.1393, 44.4841, 42.4486
+aos  AP:51.13, 49.30, 47.37
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:51.8028, 49.7106, 47.9228
+bev  AP:50.1111, 47.8176, 44.7429
+3d   AP:46.1507, 43.3623, 40.4265
+aos  AP:50.04, 47.62, 45.59
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:52.6807, 51.1713, 49.4696
+bev  AP:58.8759, 57.9290, 56.2523
+3d   AP:58.8248, 57.5859, 55.5610
+aos  AP:51.13, 49.30, 47.37
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:51.8028, 49.7106, 47.9228
+bev  AP:58.4737, 56.9243, 55.5274
+3d   AP:58.4191, 56.5960, 54.9213
+aos  AP:50.04, 47.62, 45.59
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:70.1899, 60.0016, 57.5929
+bev  AP:61.3650, 51.8206, 50.1348
+3d   AP:61.0300, 50.4998, 48.6818
+aos  AP:70.09, 59.84, 57.44
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:71.6910, 60.0859, 57.3987
+bev  AP:61.7428, 50.7795, 48.6948
+3d   AP:61.1018, 49.4653, 47.2024
+aos  AP:71.55, 59.91, 57.23
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:70.1899, 60.0016, 57.5929
+bev  AP:65.3726, 54.6393, 52.6396
+3d   AP:65.3726, 54.6393, 52.6396
+aos  AP:70.09, 59.84, 57.44
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:71.6910, 60.0859, 57.3987
+bev  AP:66.3531, 54.4465, 52.1558
+3d   AP:66.3531, 54.4465, 52.1558
+aos  AP:71.55, 59.91, 57.23
+
+2022-01-13 19:33:58,904   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_44/val
+2022-01-13 19:33:58,905   INFO  ****************Evaluation done.*****************
+2022-01-13 19:33:58,927   INFO  Epoch 44 has been evaluated
+2022-01-13 19:33:58,927   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_45.pth to GPU
+2022-01-13 19:33:59,177   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:33:59,445   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:33:59,448   INFO  *************** EPOCH 45 EVALUATION *****************
+2022-01-13 19:36:30,104   INFO  *************** Performance of EPOCH 45 *****************
+2022-01-13 19:36:30,106   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:36:30,106   INFO  recall_rcnn_0.3: 0.940939
+2022-01-13 19:36:30,106   INFO  recall_rcnn_0.5: 0.881993
+2022-01-13 19:36:30,106   INFO  recall_rcnn_0.7: 0.640430
+2022-01-13 19:36:30,108   INFO  Average predicted number of objects(1884 samples): 16.323
+2022-01-13 19:36:41,438   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:94.7086, 89.2313, 88.5718
+bev  AP:89.8014, 87.5330, 83.8836
+3d   AP:87.4646, 77.4826, 75.8112
+aos  AP:94.68, 89.10, 88.35
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.7109, 91.7811, 90.9756
+bev  AP:94.3824, 88.2850, 85.6477
+3d   AP:89.6956, 78.7392, 75.8419
+aos  AP:97.68, 91.63, 90.72
+Car AP@0.70, 0.50, 0.50:
+bbox AP:94.7086, 89.2313, 88.5718
+bev  AP:94.6982, 89.5332, 89.0464
+3d   AP:94.6389, 89.4951, 88.9490
+aos  AP:94.68, 89.10, 88.35
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.7109, 91.7811, 90.9756
+bev  AP:97.6853, 94.1939, 93.6286
+3d   AP:97.6489, 94.0585, 91.6387
+aos  AP:97.68, 91.63, 90.72
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:74.8707, 70.7335, 67.9449
+bev  AP:65.6057, 64.1135, 59.4193
+3d   AP:62.4469, 58.8644, 55.3758
+aos  AP:73.17, 68.64, 65.42
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:75.6955, 71.6824, 68.1975
+bev  AP:66.5944, 63.7467, 59.5340
+3d   AP:62.2847, 59.0772, 54.3336
+aos  AP:73.83, 69.26, 65.48
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:74.8707, 70.7335, 67.9449
+bev  AP:78.8081, 77.2025, 74.0631
+3d   AP:78.7967, 77.1952, 73.8516
+aos  AP:73.17, 68.64, 65.42
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:75.6955, 71.6824, 68.1975
+bev  AP:80.6541, 78.4443, 75.1223
+3d   AP:80.6477, 78.3702, 74.9411
+aos  AP:73.83, 69.26, 65.48
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:94.5918, 80.7767, 77.6754
+bev  AP:78.4060, 66.8343, 65.6224
+3d   AP:76.0091, 63.6901, 59.5884
+aos  AP:94.36, 80.48, 77.38
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:95.3459, 82.2681, 78.7350
+bev  AP:80.6671, 67.6621, 64.9788
+3d   AP:76.2351, 63.4532, 59.8769
+aos  AP:95.09, 81.93, 78.42
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:94.5918, 80.7767, 77.6754
+bev  AP:88.7696, 73.7895, 70.5290
+3d   AP:88.7696, 73.7895, 70.5290
+aos  AP:94.36, 80.48, 77.38
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:95.3459, 82.2681, 78.7350
+bev  AP:89.6500, 74.9225, 71.4020
+3d   AP:89.6500, 74.9225, 71.4020
+aos  AP:95.09, 81.93, 78.42
+
+2022-01-13 19:36:41,441   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_45/val
+2022-01-13 19:36:41,441   INFO  ****************Evaluation done.*****************
+2022-01-13 19:36:41,468   INFO  Epoch 45 has been evaluated
+2022-01-13 19:36:41,468   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_46.pth to GPU
+2022-01-13 19:36:41,721   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:36:41,946   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:36:41,948   INFO  *************** EPOCH 46 EVALUATION *****************
+2022-01-13 19:39:12,313   INFO  *************** Performance of EPOCH 46 *****************
+2022-01-13 19:39:12,314   INFO  Generate label finished(sec_per_example: 0.0798 second).
+2022-01-13 19:39:12,314   INFO  recall_rcnn_0.3: 0.935160
+2022-01-13 19:39:12,314   INFO  recall_rcnn_0.5: 0.874827
+2022-01-13 19:39:12,315   INFO  recall_rcnn_0.7: 0.625173
+2022-01-13 19:39:12,316   INFO  Average predicted number of objects(1884 samples): 46.067
+2022-01-13 19:39:30,552   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:93.6680, 88.5350, 87.6649
+bev  AP:89.6179, 83.0867, 82.6836
+3d   AP:86.8703, 76.5214, 72.5276
+aos  AP:93.63, 88.43, 87.48
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.1182, 90.7169, 88.3911
+bev  AP:94.1034, 85.4685, 84.5554
+3d   AP:89.0513, 77.2468, 73.4925
+aos  AP:97.08, 90.60, 88.21
+Car AP@0.70, 0.50, 0.50:
+bbox AP:93.6680, 88.5350, 87.6649
+bev  AP:93.6536, 89.1253, 88.5630
+3d   AP:93.6137, 88.9772, 88.3027
+aos  AP:93.63, 88.43, 87.48
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.1182, 90.7169, 88.3911
+bev  AP:97.1014, 93.2413, 92.0760
+3d   AP:97.0540, 92.2368, 90.6985
+aos  AP:97.08, 90.60, 88.21
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:53.6341, 52.2091, 50.6145
+bev  AP:51.1557, 49.2374, 45.5652
+3d   AP:46.8598, 44.7652, 42.3013
+aos  AP:51.98, 50.29, 48.57
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:53.2566, 51.0964, 49.2351
+bev  AP:50.0881, 47.6654, 44.6944
+3d   AP:45.3148, 43.1404, 40.2020
+aos  AP:51.43, 48.97, 46.90
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:53.6341, 52.2091, 50.6145
+bev  AP:58.0638, 57.7471, 55.5437
+3d   AP:58.0012, 57.5889, 55.0999
+aos  AP:51.98, 50.29, 48.57
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:53.2566, 51.0964, 49.2351
+bev  AP:57.7527, 56.7001, 54.9146
+3d   AP:57.6891, 56.4116, 54.4852
+aos  AP:51.43, 48.97, 46.90
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:68.7412, 60.4696, 58.1002
+bev  AP:61.8596, 52.5767, 50.5725
+3d   AP:60.5643, 50.1457, 48.9877
+aos  AP:68.64, 60.31, 57.95
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:70.3741, 59.9101, 57.3808
+bev  AP:61.7229, 51.0914, 48.8303
+3d   AP:59.8440, 48.7677, 46.6081
+aos  AP:70.24, 59.75, 57.23
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:68.7412, 60.4696, 58.1002
+bev  AP:64.3420, 55.1313, 53.1454
+3d   AP:64.3420, 55.1313, 53.1454
+aos  AP:68.64, 60.31, 57.95
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:70.3741, 59.9101, 57.3808
+bev  AP:65.0365, 53.9202, 51.7665
+3d   AP:65.0365, 53.9202, 51.7665
+aos  AP:70.24, 59.75, 57.23
+
+2022-01-13 19:39:30,554   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_46/val
+2022-01-13 19:39:30,555   INFO  ****************Evaluation done.*****************
+2022-01-13 19:39:30,577   INFO  Epoch 46 has been evaluated
+2022-01-13 19:39:30,578   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_47.pth to GPU
+2022-01-13 19:39:30,811   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:39:31,037   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:39:31,040   INFO  *************** EPOCH 47 EVALUATION *****************
+2022-01-13 19:42:01,784   INFO  *************** Performance of EPOCH 47 *****************
+2022-01-13 19:42:01,785   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:42:01,785   INFO  recall_rcnn_0.3: 0.939436
+2022-01-13 19:42:01,785   INFO  recall_rcnn_0.5: 0.880028
+2022-01-13 19:42:01,785   INFO  recall_rcnn_0.7: 0.644822
+2022-01-13 19:42:01,787   INFO  Average predicted number of objects(1884 samples): 16.809
+2022-01-13 19:42:13,321   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:94.8555, 89.2843, 88.6330
+bev  AP:89.6804, 87.5353, 84.2780
+3d   AP:87.5992, 77.5824, 76.3702
+aos  AP:94.82, 89.16, 88.43
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.6374, 91.9502, 91.0916
+bev  AP:94.1876, 88.2554, 87.0131
+3d   AP:89.7894, 79.0024, 76.2758
+aos  AP:97.60, 91.81, 90.85
+Car AP@0.70, 0.50, 0.50:
+bbox AP:94.8555, 89.2843, 88.6330
+bev  AP:94.8540, 89.5254, 89.1010
+3d   AP:94.7938, 89.4848, 88.9928
+aos  AP:94.82, 89.16, 88.43
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.6374, 91.9502, 91.0916
+bev  AP:97.6810, 94.3002, 93.7856
+3d   AP:97.6464, 94.1678, 91.7933
+aos  AP:97.60, 91.81, 90.85
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:75.3213, 71.2902, 68.5291
+bev  AP:67.1154, 64.0476, 59.4893
+3d   AP:61.9164, 58.2253, 54.8310
+aos  AP:73.52, 69.17, 66.02
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:76.1628, 72.6178, 69.0026
+bev  AP:67.3082, 63.9832, 59.5585
+3d   AP:61.1195, 58.2545, 53.3861
+aos  AP:74.14, 70.13, 66.24
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:75.3213, 71.2902, 68.5291
+bev  AP:78.7197, 76.8939, 74.0523
+3d   AP:78.7080, 76.8769, 73.7836
+aos  AP:73.52, 69.17, 66.02
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:76.1628, 72.6178, 69.0026
+bev  AP:80.5552, 78.2461, 75.0127
+3d   AP:80.5488, 78.2177, 74.8395
+aos  AP:74.14, 70.13, 66.24
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:94.1479, 80.3095, 77.1460
+bev  AP:78.1067, 65.4473, 63.9793
+3d   AP:75.5476, 62.6910, 59.1653
+aos  AP:93.81, 79.94, 76.79
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:94.8159, 81.8090, 78.8468
+bev  AP:79.9997, 66.5140, 63.0997
+3d   AP:77.2485, 62.1035, 59.2466
+aos  AP:94.46, 81.43, 78.48
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:94.1479, 80.3095, 77.1460
+bev  AP:88.4982, 73.4193, 69.5925
+3d   AP:88.4982, 73.4193, 69.5925
+aos  AP:93.81, 79.94, 76.79
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:94.8159, 81.8090, 78.8468
+bev  AP:88.8869, 74.2658, 70.7050
+3d   AP:88.8869, 74.2658, 70.7050
+aos  AP:94.46, 81.43, 78.48
+
+2022-01-13 19:42:13,322   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_47/val
+2022-01-13 19:42:13,322   INFO  ****************Evaluation done.*****************
+2022-01-13 19:42:13,346   INFO  Epoch 47 has been evaluated
+2022-01-13 19:42:13,346   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_48.pth to GPU
+2022-01-13 19:42:13,587   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:42:13,809   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:42:13,812   INFO  *************** EPOCH 48 EVALUATION *****************
+2022-01-13 19:44:44,655   INFO  *************** Performance of EPOCH 48 *****************
+2022-01-13 19:44:44,656   INFO  Generate label finished(sec_per_example: 0.0801 second).
+2022-01-13 19:44:44,656   INFO  recall_rcnn_0.3: 0.934582
+2022-01-13 19:44:44,656   INFO  recall_rcnn_0.5: 0.875173
+2022-01-13 19:44:44,656   INFO  recall_rcnn_0.7: 0.627138
+2022-01-13 19:44:44,658   INFO  Average predicted number of objects(1884 samples): 46.294
+2022-01-13 19:45:03,049   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:94.9722, 88.3991, 87.4166
+bev  AP:89.5117, 82.4058, 82.4005
+3d   AP:86.9973, 76.3065, 72.0006
+aos  AP:94.94, 88.28, 87.22
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.4258, 90.5827, 88.2274
+bev  AP:94.0179, 85.0684, 84.2161
+3d   AP:89.1855, 75.8676, 73.2784
+aos  AP:97.39, 90.45, 88.03
+Car AP@0.70, 0.50, 0.50:
+bbox AP:94.9722, 88.3991, 87.4166
+bev  AP:94.9859, 89.0458, 88.5142
+3d   AP:94.9184, 88.9073, 88.2698
+aos  AP:94.94, 88.28, 87.22
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.4258, 90.5827, 88.2274
+bev  AP:97.4739, 93.2202, 92.0178
+3d   AP:97.3814, 92.6485, 90.6413
+aos  AP:97.39, 90.45, 88.03
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:53.9262, 52.0556, 50.4455
+bev  AP:50.8439, 49.2591, 45.9019
+3d   AP:47.7466, 45.4051, 42.1920
+aos  AP:52.25, 50.09, 48.43
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:53.6722, 51.2731, 49.1529
+bev  AP:50.0250, 47.5254, 44.5231
+3d   AP:46.4518, 43.7753, 40.2345
+aos  AP:51.78, 49.08, 46.80
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:53.9262, 52.0556, 50.4455
+bev  AP:58.3641, 57.6115, 55.4854
+3d   AP:58.2966, 57.3766, 55.1416
+aos  AP:52.25, 50.09, 48.43
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:53.6722, 51.2731, 49.1529
+bev  AP:58.1854, 56.8511, 54.8680
+3d   AP:58.1081, 56.5241, 54.4704
+aos  AP:51.78, 49.08, 46.80
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:69.0443, 59.7967, 57.3837
+bev  AP:62.7500, 51.8513, 49.7334
+3d   AP:60.4253, 49.8338, 48.3534
+aos  AP:68.94, 59.64, 57.24
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:69.9398, 59.3575, 57.0112
+bev  AP:62.3889, 50.6549, 48.2993
+3d   AP:59.5791, 48.4219, 46.1534
+aos  AP:69.82, 59.19, 56.85
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:69.0443, 59.7967, 57.3837
+bev  AP:64.8929, 54.4229, 52.4997
+3d   AP:64.8929, 54.4229, 52.4997
+aos  AP:68.94, 59.64, 57.24
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:69.9398, 59.3575, 57.0112
+bev  AP:64.8327, 53.3770, 51.3445
+3d   AP:64.8327, 53.3770, 51.3445
+aos  AP:69.82, 59.19, 56.85
+
+2022-01-13 19:45:03,051   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_48/val
+2022-01-13 19:45:03,051   INFO  ****************Evaluation done.*****************
+2022-01-13 19:45:03,076   INFO  Epoch 48 has been evaluated
+2022-01-13 19:45:03,076   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_49.pth to GPU
+2022-01-13 19:45:03,312   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:45:03,538   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:45:03,541   INFO  *************** EPOCH 49 EVALUATION *****************
+2022-01-13 19:47:34,842   INFO  *************** Performance of EPOCH 49 *****************
+2022-01-13 19:47:34,843   INFO  Generate label finished(sec_per_example: 0.0803 second).
+2022-01-13 19:47:34,843   INFO  recall_rcnn_0.3: 0.940245
+2022-01-13 19:47:34,843   INFO  recall_rcnn_0.5: 0.881415
+2022-01-13 19:47:34,843   INFO  recall_rcnn_0.7: 0.645747
+2022-01-13 19:47:34,845   INFO  Average predicted number of objects(1884 samples): 16.815
+2022-01-13 19:47:46,193   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:94.9551, 89.3414, 88.6908
+bev  AP:89.7293, 87.6680, 84.9942
+3d   AP:87.6298, 77.6712, 76.4422
+aos  AP:94.92, 89.21, 88.47
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.6862, 91.9649, 91.1694
+bev  AP:94.3104, 88.3109, 87.2015
+3d   AP:89.8447, 79.0734, 76.3608
+aos  AP:97.65, 91.83, 90.93
+Car AP@0.70, 0.50, 0.50:
+bbox AP:94.9551, 89.3414, 88.6908
+bev  AP:94.9246, 89.5333, 89.0974
+3d   AP:94.8661, 89.4996, 89.0353
+aos  AP:94.92, 89.21, 88.47
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.6862, 91.9649, 91.1694
+bev  AP:97.7255, 94.2780, 93.7178
+3d   AP:97.6910, 94.1923, 91.7664
+aos  AP:97.65, 91.83, 90.93
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:76.0142, 71.6150, 68.4865
+bev  AP:65.6532, 63.3032, 58.6590
+3d   AP:62.0938, 58.2559, 54.7778
+aos  AP:74.40, 69.54, 66.10
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:76.5618, 73.0024, 69.1294
+bev  AP:66.0334, 62.9867, 58.5244
+3d   AP:61.6897, 58.3927, 53.6263
+aos  AP:74.81, 70.64, 66.44
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:76.0142, 71.6150, 68.4865
+bev  AP:78.8000, 76.6461, 73.8690
+3d   AP:78.7941, 76.5325, 73.6259
+aos  AP:74.40, 69.54, 66.10
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:76.5618, 73.0024, 69.1294
+bev  AP:80.5218, 78.1129, 74.8151
+3d   AP:80.5180, 78.0040, 74.6349
+aos  AP:74.81, 70.64, 66.44
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:94.2402, 80.1925, 77.4350
+bev  AP:77.5217, 65.0846, 62.2044
+3d   AP:75.9182, 62.9993, 59.6736
+aos  AP:94.01, 79.89, 77.12
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:95.0094, 81.6539, 78.6724
+bev  AP:79.3651, 65.1911, 62.0947
+3d   AP:76.1283, 62.3315, 59.6820
+aos  AP:94.74, 81.33, 78.36
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:94.2402, 80.1925, 77.4350
+bev  AP:88.5759, 73.0557, 69.7905
+3d   AP:88.5759, 73.0557, 69.7905
+aos  AP:94.01, 79.89, 77.12
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:95.0094, 81.6539, 78.6724
+bev  AP:89.0228, 74.0407, 70.6961
+3d   AP:89.0228, 74.0407, 70.6961
+aos  AP:94.74, 81.33, 78.36
+
+2022-01-13 19:47:46,194   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_49/val
+2022-01-13 19:47:46,194   INFO  ****************Evaluation done.*****************
+2022-01-13 19:47:46,216   INFO  Epoch 49 has been evaluated
+2022-01-13 19:47:46,216   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs50_set50_bipfn[128, 128]_NoSkip_lr0.00030/0/checkpoint_epoch_50.pth to GPU
+2022-01-13 19:47:46,454   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+pydf314ef
+2022-01-13 19:47:46,680   INFO  ==> Done (loaded 210/210)
+2022-01-13 19:47:46,683   INFO  *************** EPOCH 50 EVALUATION *****************
+2022-01-13 19:50:17,418   INFO  *************** Performance of EPOCH 50 *****************
+2022-01-13 19:50:17,419   INFO  Generate label finished(sec_per_example: 0.0800 second).
+2022-01-13 19:50:17,419   INFO  recall_rcnn_0.3: 0.935391
+2022-01-13 19:50:17,419   INFO  recall_rcnn_0.5: 0.874480
+2022-01-13 19:50:17,419   INFO  recall_rcnn_0.7: 0.627716
+2022-01-13 19:50:17,421   INFO  Average predicted number of objects(1884 samples): 46.037
+2022-01-13 19:50:35,491   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:94.9835, 88.4409, 87.5291
+bev  AP:89.4640, 82.2930, 82.2600
+3d   AP:86.9273, 76.2911, 72.3632
+aos  AP:94.95, 88.31, 87.32
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:97.5080, 90.6038, 88.2366
+bev  AP:94.0038, 85.0082, 84.2168
+3d   AP:89.0962, 75.7968, 74.1687
+aos  AP:97.47, 90.46, 88.03
+Car AP@0.70, 0.50, 0.50:
+bbox AP:94.9835, 88.4409, 87.5291
+bev  AP:94.9801, 88.9826, 88.4872
+3d   AP:94.9144, 88.8668, 88.2600
+aos  AP:94.95, 88.31, 87.32
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:97.5080, 90.6038, 88.2366
+bev  AP:97.5326, 93.1580, 92.1129
+3d   AP:97.4780, 92.7272, 90.6112
+aos  AP:97.47, 90.46, 88.03
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:53.3861, 51.8396, 50.3114
+bev  AP:51.3034, 49.6782, 46.1943
+3d   AP:47.3968, 45.6349, 42.6659
+aos  AP:51.73, 49.98, 48.40
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:53.0058, 50.8132, 48.9358
+bev  AP:50.7465, 48.0746, 44.9771
+3d   AP:46.4643, 43.7448, 40.5218
+aos  AP:51.17, 48.73, 46.70
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:53.3861, 51.8396, 50.3114
+bev  AP:58.6984, 57.6468, 55.8109
+3d   AP:58.5438, 57.2168, 55.2198
+aos  AP:51.73, 49.98, 48.40
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:53.0058, 50.8132, 48.9358
+bev  AP:58.5496, 56.8375, 55.1015
+3d   AP:58.3629, 56.3956, 54.5438
+aos  AP:51.17, 48.73, 46.70
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:68.9731, 59.3979, 57.5019
+bev  AP:62.0879, 51.9329, 49.7541
+3d   AP:59.6696, 49.6214, 47.8099
+aos  AP:68.87, 59.26, 57.37
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:69.8110, 59.0108, 56.7899
+bev  AP:62.0870, 50.3736, 48.2058
+3d   AP:58.9444, 47.7413, 45.5628
+aos  AP:69.70, 58.86, 56.65
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:68.9731, 59.3979, 57.5019
+bev  AP:64.5885, 54.1369, 52.6048
+3d   AP:64.5885, 54.1369, 52.6048
+aos  AP:68.87, 59.26, 57.37
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:69.8110, 59.0108, 56.7899
+bev  AP:64.8610, 53.0485, 51.1409
+3d   AP:64.8610, 53.0485, 51.1409
+aos  AP:69.70, 58.86, 56.65
+
+2022-01-13 19:50:35,493   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set50_bifpn[128, 128]_NoSkip_lr0.00030/epoch_50/val
+2022-01-13 19:50:35,494   INFO  ****************Evaluation done.*****************
+2022-01-13 19:50:35,518   INFO  Epoch 50 has been evaluated

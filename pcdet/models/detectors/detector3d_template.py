@@ -84,7 +84,6 @@ class Detector3DTemplate(nn.Module):
         map_to_bev_module = map_to_bev.__all__[self.model_cfg.MAP_TO_BEV.NAME](
             model_cfg=self.model_cfg.MAP_TO_BEV,
             grid_size=model_info_dict['grid_size'],
-            # bifpn=self.dataset.args.get('bifpn', [])
             
         )
         model_info_dict['module_list'].append(map_to_bev_module)
@@ -363,10 +362,8 @@ class Detector3DTemplate(nn.Module):
         checkpoint = torch.load(filename, map_location=loc_type)
         epoch = checkpoint.get('epoch', -1)
         it = checkpoint.get('it', 0.0)
-
         self.load_state_dict(checkpoint['model_state'])
-
-        if optimizer is not None:
+        if optimizer is not None:  
             if 'optimizer_state' in checkpoint and checkpoint['optimizer_state'] is not None:
                 logger.info('==> Loading optimizer parameters from checkpoint %s to %s'
                             % (filename, 'CPU' if to_cpu else 'GPU'))

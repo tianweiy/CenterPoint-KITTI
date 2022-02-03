@@ -92,6 +92,7 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
 
     gt_num_cnt = metric['gt_num']
     for cur_thresh in cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST:
+        # Only Recall scores matter to us.
         # cur_roi_recall = metric['recall_roi_%s' % str(cur_thresh)] / max(gt_num_cnt, 1)
         cur_rcnn_recall = metric['recall_rcnn_%s' % str(cur_thresh)] / max(gt_num_cnt, 1)
         # logger.info('recall_roi_%s: %f' % (cur_thresh, cur_roi_recall))
@@ -118,7 +119,6 @@ def eval_one_epoch(cfg, model, dataloader, epoch_id, logger, dist_test=False, sa
         ret_dict.update(result_dict)
 
 
-    # exit(1)
     ret_dict["Time/Inference_Time_Per_Sample"] = sec_per_example
 
     logger.info('Result is save to %s' % result_dir)

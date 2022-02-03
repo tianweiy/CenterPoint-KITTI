@@ -3,7 +3,6 @@ import torch
 
 def conv_block(in_channels, out_channels, kernel_size=3, padding=1, eps=1e-3, momentum=0.01,
  stride=1, bias=False):
-    # TODO: think if we need different kernel sizes, and if so - we can use the 1x1 convs.
     return nn.Sequential(
         nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding,
          stride=stride, bias=bias),
@@ -15,33 +14,35 @@ def conv_block(in_channels, out_channels, kernel_size=3, padding=1, eps=1e-3, mo
 class BiFPN(nn.Module):
     """
     This is influenced by: https://github.com/ViswanathaReddyGajjala/EfficientDet-Pytorch/blob/master/BiFPN.py
-    And the paper: https://arxiv.org/abs/1911.09070
+    And the paper: https://arxiv.org/abs/1911.09070 
+    
+    Those BiFPN layers are meant to processed multiscaled features, in order to refine the input data. It uses a weighted fusion,
+    to learn the optimal relation between the different scales.
+    In contrast to the original implementation, the batchnorm comes here AFTER Relu on the BiFPN github, in contrast to the convention.
 
     """
     def __init__(self,  fpn_sizes, out_channels=256, eps=1e-4, block_num=1):
         super().__init__()
 
+        # The input channels of all 3 different inputs.
         P5_channels, P4_channels, P3_channels = fpn_sizes
 
         self.block_num = block_num
         self.out_chn = out_channels
         self.eps = eps
 
-        # TODO: notice that batchnorm comes here AFTER Relu on the BiFPN github, in contrast to the convention.
-        block = conv_block
-
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         # 5
-        self.p5_inp_conv = block(P5_channels, self.out_chn)
-        self.p5_out_conv = block(self.out_chn, self.out_chn)
+        self.p5_inp_conv = conv_block(P5_channels, self.out_chn)
+        self.p5_out_conv = conv_block(self.out_chn, self.out_chn)
         
         self.p5_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True, device=self.device)
         self.p5_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True, device=self.device)
 
         # 4
-        self.p4_inp_conv = block(P4_channels, self.out_chn)
-        self.p4_td_conv = block(self.out_chn, self.out_chn)
-        self.p4_out_conv = block(self.out_chn, self.out_chn)
+        self.p4_inp_conv = conv_block(P4_channels, self.out_chn)
+        self.p4_td_conv = conv_block(self.out_chn, self.out_chn)
+        self.p4_out_conv = conv_block(self.out_chn, self.out_chn)
 
         self.p4_td_w1 = torch.tensor(1, dtype=torch.float, requires_grad=True)
         self.p4_td_w2 = torch.tensor(1, dtype=torch.float, requires_grad=True)
@@ -50,8 +51,8 @@ class BiFPN(nn.Module):
         self.p4_out_w3 = torch.tensor(1, dtype=torch.float, requires_grad=True)
         
         # 3
-        self.p3_inp_conv = block(P3_channels, self.out_chn)
-        self.p3_out_conv = block(self.out_chn, self.out_chn)
+        self.p3_inp_conv = conv_block(P3_channels, self.out_chn)
+        self.p3_out_conv = conv_block(self.out_chn, self.out_chn)
 
         self.p3_out_w1  = torch.tensor(1, dtype=torch.float, requires_grad=True)
         self.p3_out_w2  = torch.tensor(1, dtype=torch.float, requires_grad=True)
@@ -65,16 +66,13 @@ class BiFPN(nn.Module):
         
     def forward(self, in_5, in_4, in_3):
 
-        # Input convs, we keep the dimensions
-        # print(in_5.shape, in_4.shape, in_3.shape)
-
-        conv_5_in = self.p5_inp_conv(in_5)  # [4, 256, 200, 176] , 4 is batch_size
+        conv_5_in = self.p5_inp_conv(in_5)  # [4, 256, 200, 176] 
         conv_4_in = self.p4_inp_conv(in_4)  # [4, 320, 200, 176]
         conv_3_in = self.p3_inp_conv(in_3)  # [4, 704, 400, 352]
 
         # intermediate convs for 3 & 4 (top --> down path)
-        dev_fact = 1 / (self.p4_td_w1 + self.p4_td_w2 + self.eps)       
-        t_in = (self.p4_td_w1 * conv_4_in + self.p4_td_w2 * conv_5_in ) * dev_fact
+        dev_fact = 1 / (self.p4_td_w1 + self.p4_td_w2 + self.eps)  # Operation optamization.
+        t_in = (self.p4_td_w1 * conv_4_in + self.p4_td_w2 * conv_5_in ) * dev_fact 
         td_4 = self.p4_td_conv(t_in)
 
         if self.block_num == 1 and not (conv_3_in.shape == td_4.shape):
@@ -100,6 +98,9 @@ class BiFPN(nn.Module):
         return out_5, out_4, out_3
 
 class BiFPN_Network(nn.Module):
+    """
+    A sub-netowrk of BiFPN blocks, to use within a greater architechture.
+    """
     def __init__(self, fpn_sizes, out_channels: list = [256], eps=1e-4):
         super().__init__()
 
@@ -108,19 +109,19 @@ class BiFPN_Network(nn.Module):
         self.layers = []
 
         for i in range(self.num_blocks):
+            # From the second block on, all inputs would have the same number of channels, as specified in out_channels.
             if i > 0:
                 fpn_sizes = [out_channels[i - 1]] * 3
-
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1))
             self.layers.append(current)
         
+        # It is very important to use nn.ModuleList and not a regular one, since the latter causes an unknown behaviour.
         self.layers = nn.ModuleList(self.layers)
         self.cuda()
         
         
     def forward(self, in_5, in_4, in_3):
 
-        # TODO: Get rid of loop by packing inputs into tuple
         for i in range(self.num_blocks):
             in_5, in_4, in_3 = self.layers[i](in_5, in_4, in_3)
 
@@ -132,33 +133,34 @@ class BiFPN_Network(nn.Module):
 
 
 class BiFPN_Network_SkipConnections(nn.Module):
+    """
+    A BiFPN with skip connections. The skip connectios are the highroad from the 3 inputs to a BiFPN layers, to their corresponding 3 outputs.
+    """
     def __init__(self, fpn_sizes, out_channels: list = [256], eps=1e-4):
         super().__init__()
 
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.num_blocks = len(out_channels)
         self.layers = []
+        
+        # Thie final_convs layers are meant to make sure the outputs of the BiFPN layer match the size of the inputs.
         self.final_convs = nn.ModuleList([nn.ModuleList([conv_block(out_channels[i], fpn_sizes[j], kernel_size=1, padding=0).to(device=self.device) for j in range(len(fpn_sizes))]) for i in range(len(out_channels))])
         for i in range(self.num_blocks):
          
             current = BiFPN(fpn_sizes, out_channels[i], eps, block_num=(i + 1)).to(device=self.device)
             self.layers.append(current)
 
-
         self.layers = nn.ModuleList(self.layers)
         self.cuda()
-                # print("####### params", self.num_of_params())
         
     def forward(self, in_5, in_4, in_3):
-        # running_input = in_5
         for i in range(self.num_blocks):
             inputs = [in_5, in_4, in_3]
             outs = list(self.layers[i](in_5, in_4, in_3))
             for j in range(len(outs)):
                 outs[j] = self.final_convs[i][j](outs[j]) + inputs[j].to(device=self.device)
             in_5, in_4, in_3 = outs
-            # running_input = inputs[0]
-        return in_5, in_4, in_3 #,  running_input
+        return in_5, in_4, in_3
 
 
     def is_same_spatial(self, x1, x2):

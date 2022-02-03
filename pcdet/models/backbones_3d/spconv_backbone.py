@@ -154,7 +154,6 @@ class VoxelBackBone8x(nn.Module):
         # for detection head
         # [200, 176, 5] -> [200, 176, 2]
         out = self.conv_out(x_conv4)
-        # out = self.bifpn(out, x_conv4, x_conv3)
     
 
         batch_dict.update({

@@ -4,7 +4,7 @@ import glob
 import os
 from pathlib import Path
 from numpy.core.records import array
-from test import repeat_eval_ckpt
+from test import repeat_eval_ckpt, find_next_folder_name
 
 import torch
 import torch.distributed as dist
@@ -20,20 +20,56 @@ from train_utils.optimization import build_optimizer, build_scheduler
 from train_utils.train_utils import train_model
 import shutil
 
-def find_next_folder_name(arr):
-    n = len(arr)
-    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
-    for i in range(n):
-        if i not in exsits:
-            n = i
-            break
-    return str(n)
+def create_paths(args):
+    """[Those paths are used for saving the checkpoints and tensorboard files. In order to distinguish betweehn the]
+
+    Args:
+        args ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
+    log_name += "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
+
+    output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
+    ckpt_dir = output_dir / 'ckpt' / log_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if args.clear and os.path.exists(ckpt_dir):
+        shutil.rmtree(str(ckpt_dir))
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    subdirs = os.listdir(ckpt_dir)
+    dir_name = find_next_folder_name(subdirs)
+    config_ckpt = ckpt_dir
+    ckpt_dir = config_ckpt / dir_name  if not args.testmode else config_ckpt / "test"
+    
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+
+    tb_path = output_dir / 'tensorboard' / log_name
+
+    if args.clear and os.path.exists(tb_path):
+        shutil.rmtree(str(tb_path))
+    tb_path.mkdir(parents=True, exist_ok=True)
+    subdirs = os.listdir(tb_path)
+
+    tb_path = tb_path / find_next_folder_name(subdirs) if not args.testmode else tb_path / "test"
+    tb_path.mkdir(parents=True, exist_ok=True)
+    
+    return output_dir, ckpt_dir, config_ckpt, tb_path
+
+    
 
 def parse_config():
+    """[Argumenrs given throught the cmd \ terminal]
+
+    Returns:
+        [EasyDict]: [args, dictionary of the arguments.]
+        [EasyDict]: [cfg, configuration values from the configuration file under cfgs\cfgs]
+    """    
     parser = argparse.ArgumentParser(description='arg parser')
     parser.add_argument('--cfg_file', type=str, default=None, help='specify the config for training')
 
-    parser.add_argument('--batch_size', type=int, default=None, required=False, help='batch size for training')
+    parser.add_argument('--batch_size', type=int, default=4, required=False, help='batch size for training')
     parser.add_argument('--epochs', type=int, default=None, required=False, help='number of epochs to train for')
     parser.add_argument('--workers', type=int, default=4, help='number of workers for dataloader')
     parser.add_argument('--extra_tag', type=str, default='default', help='extra tag for this experiment')
@@ -57,7 +93,6 @@ def parse_config():
     parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
     parser.add_argument('--testmode', dest='testmode', action='store_true', help="Don't create another folder")
     parser.add_argument('--eval', type=bool, default=False, help='If to do evalutation at the end')
-    # parser.add_argument("--clear", type=bool, default=False, help)
     parser.add_argument('--clear', dest='clear', action='store_true')
 
     args = parser.parse_args()
@@ -94,35 +129,9 @@ def main():
 
     if args.fix_random_seed:
         common_utils.set_random_seed(666)
-
-    log_name = "batch" + str(args.batch_size) + "_epochs" + str(args.epochs) + "_set" + str(args.set_size) +"_bipfn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip")
-    log_name += "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)
-
-
-    output_dir = cfg.ROOT_DIR / 'output' / cfg.EXP_GROUP_PATH / cfg.TAG / args.extra_tag
-    ckpt_dir = output_dir / 'ckpt' / log_name
-    output_dir.mkdir(parents=True, exist_ok=True)
-    if args.clear and os.path.exists(ckpt_dir):
-        shutil.rmtree(str(ckpt_dir))
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
-    subdirs = os.listdir(ckpt_dir)
-    dir_name = find_next_folder_name(subdirs)
-    config_ckpt = ckpt_dir
-    ckpt_dir = config_ckpt / dir_name  if not args.testmode else config_ckpt / "test"
-    
-    ckpt_dir.mkdir(parents=True, exist_ok=True)
-
-       
-    tb_path = output_dir / 'tensorboard' / log_name
-
-    if args.clear and os.path.exists(tb_path):
-        shutil.rmtree(str(tb_path))
-    tb_path.mkdir(parents=True, exist_ok=True)
-    subdirs = os.listdir(tb_path)
-
-    tb_path = tb_path / find_next_folder_name(subdirs) if not args.testmode else tb_path / "test"
-    tb_path.mkdir(parents=True, exist_ok=True)
-
+        
+    # -----------------------Create relevant names for folders, so we could diffrintate between different runs.---------------------------
+    output_dir, ckpt_dir, config_ckpt, tb_path = create_paths(args)
 
     log_file = output_dir / ('log_train_%s.txt' % datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
     logger = common_utils.create_logger(log_file, rank=cfg.LOCAL_RANK)
@@ -139,7 +148,6 @@ def main():
     log_config_to_file(cfg, logger=logger)
     if cfg.LOCAL_RANK == 0:
         os.system('cp %s %s' % (args.cfg_file, output_dir))
-    
     
     tb_log = SummaryWriter(log_dir=str(tb_path)) if cfg.LOCAL_RANK == 0 else None
     
@@ -163,6 +171,8 @@ def main():
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model.cuda()
 
+    if args.ckpt is not None:
+        cfg.OPTIMIZATION.DIV_FACTOR = 20
     optimizer = build_optimizer(model, cfg.OPTIMIZATION)
 
     # load checkpoint if it is possible
@@ -175,6 +185,7 @@ def main():
     if args.ckpt is not None:
         it, start_epoch = model.load_params_with_optimizer(args.ckpt, to_cpu=dist, optimizer=optimizer, logger=logger)
         last_epoch = start_epoch + 1
+        
     else:
         ckpt_list = glob.glob(str(config_ckpt / '*checkpoint_epoch_*.pth'))
         if len(ckpt_list) > 0:
@@ -194,6 +205,7 @@ def main():
         last_epoch=last_epoch, optim_cfg=cfg.OPTIMIZATION
     )
 
+    # Validation data
     test_set, test_loader, test_sampler = build_dataloader(
         dataset_cfg=cfg.DATA_CONFIG,
         class_names=cfg.CLASS_NAMES,
@@ -203,6 +215,7 @@ def main():
         bifpn=args.bifpn,
         training=False
     )
+
     # -----------------------start training--------------------------
     logger.info('**********************Start training %s/%s(%s)**********************'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
@@ -211,7 +224,7 @@ def main():
         optimizer,
         train_loader,
         test_loader,
-        model_func=model_fn_decorator(),
+        model_func=model_fn_decorator(), # The method used for forward pass.
         lr_scheduler=lr_scheduler,
         optim_cfg=cfg.OPTIMIZATION,
         start_epoch=start_epoch,
@@ -232,13 +245,18 @@ def main():
     logger.info('**********************End training %s/%s(%s)**********************\n\n\n'
                 % (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
 
+    # Original work evaluates all the ckpts at the end of the training.
+    # We decided to that indivudialy with using the train.py
     if args.eval:
 
-        test_set, test_loader, sampler = build_dataloader(
+        test_set, test_loader, test_sampler = build_dataloader(
             dataset_cfg=cfg.DATA_CONFIG,
             class_names=cfg.CLASS_NAMES,
             batch_size=args.batch_size,
-            dist=dist_train, workers=args.workers, logger=logger, training=False
+            dist=dist_train, workers=args.workers, logger=logger,
+            set_size_percentage=args.set_size,
+            bifpn=args.bifpn,
+            training=False
         )
         logger.info('**********************Start evaluation %s/%s(%s)**********************' %
                     (cfg.EXP_GROUP_PATH, cfg.TAG, args.extra_tag))
