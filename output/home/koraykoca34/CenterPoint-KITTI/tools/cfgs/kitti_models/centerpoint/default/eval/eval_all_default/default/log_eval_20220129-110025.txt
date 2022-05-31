@@ -1,0 +1,478 @@
+2022-01-29 11:00:25,802   INFO  **********************Start logging**********************
+2022-01-29 11:00:25,802   INFO  CUDA_VISIBLE_DEVICES=ALL
+2022-01-29 11:00:25,802   INFO  cfg_file         /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml
+2022-01-29 11:00:25,802   INFO  batch_size       4
+2022-01-29 11:00:25,802   INFO  workers          4
+2022-01-29 11:00:25,802   INFO  extra_tag        default
+2022-01-29 11:00:25,802   INFO  ckpt             None
+2022-01-29 11:00:25,802   INFO  launcher         none
+2022-01-29 11:00:25,802   INFO  tcp_port         18888
+2022-01-29 11:00:25,802   INFO  local_rank       0
+2022-01-29 11:00:25,802   INFO  set_cfgs         None
+2022-01-29 11:00:25,802   INFO  max_waiting_mins 30
+2022-01-29 11:00:25,803   INFO  start_epoch      0
+2022-01-29 11:00:25,803   INFO  eval_tag         default
+2022-01-29 11:00:25,803   INFO  eval_all         True
+2022-01-29 11:00:25,803   INFO  ckpt_dir         /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030/0
+2022-01-29 11:00:25,803   INFO  save_to_file     False
+2022-01-29 11:00:25,803   INFO  set_size         15
+2022-01-29 11:00:25,803   INFO  bifpn            [128]
+2022-01-29 11:00:25,803   INFO  bifpn_skip       True
+2022-01-29 11:00:25,803   INFO  ckpt_start       65
+2022-01-29 11:00:25,803   INFO  cfg.ROOT_DIR: /home/koraykoca34/CenterPoint-KITTI
+2022-01-29 11:00:25,803   INFO  cfg.LOCAL_RANK: 0
+2022-01-29 11:00:25,803   INFO  cfg.CLASS_NAMES: ['Car', 'Pedestrian', 'Cyclist']
+2022-01-29 11:00:25,803   INFO  
+cfg.DATA_CONFIG = edict()
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.DATASET: KittiDataset
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.DATA_PATH: ../data/kitti
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.POINT_CLOUD_RANGE: [0, -40, -3, 70.4, 40, 1]
+2022-01-29 11:00:25,804   INFO  
+cfg.DATA_CONFIG.DATA_SPLIT = edict()
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.DATA_SPLIT.train: train
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.DATA_SPLIT.test: val
+2022-01-29 11:00:25,804   INFO  
+cfg.DATA_CONFIG.INFO_PATH = edict()
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.INFO_PATH.train: ['kitti_infos_train.pkl']
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.INFO_PATH.test: ['kitti_infos_val.pkl']
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.INFO_PATH.demo: ['kitti_infos_test.pkl']
+2022-01-29 11:00:25,804   INFO  cfg.DATA_CONFIG.FOV_POINTS_ONLY: True
+2022-01-29 11:00:25,805   INFO  
+cfg.DATA_CONFIG.DATA_AUGMENTOR = edict()
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.DISABLE_AUG_LIST: ['placeholder']
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.DATA_AUGMENTOR.AUG_CONFIG_LIST: [{'NAME': 'gt_sampling', 'USE_ROAD_PLANE': True, 'DB_INFO_PATH': ['kitti_dbinfos_train.pkl'], 'PREPARE': {'filter_by_min_points': ['Car:5', 'Pedestrian:5', 'Cyclist:5'], 'filter_by_difficulty': [-1]}, 'SAMPLE_GROUPS': ['Car:20', 'Pedestrian:15', 'Cyclist:15'], 'NUM_POINT_FEATURES': 4, 'DATABASE_WITH_FAKELIDAR': False, 'REMOVE_EXTRA_WIDTH': [0.0, 0.0, 0.0], 'LIMIT_WHOLE_SCENE': True}, {'NAME': 'random_world_flip', 'ALONG_AXIS_LIST': ['x']}, {'NAME': 'random_world_rotation', 'WORLD_ROT_ANGLE': [-0.78539816, 0.78539816]}, {'NAME': 'random_world_scaling', 'WORLD_SCALE_RANGE': [0.95, 1.05]}]
+2022-01-29 11:00:25,805   INFO  
+cfg.DATA_CONFIG.POINT_FEATURE_ENCODING = edict()
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.encoding_type: absolute_coordinates_encoding
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.used_feature_list: ['x', 'y', 'z', 'intensity']
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.POINT_FEATURE_ENCODING.src_feature_list: ['x', 'y', 'z', 'intensity']
+2022-01-29 11:00:25,805   INFO  cfg.DATA_CONFIG.DATA_PROCESSOR: [{'NAME': 'mask_points_and_boxes_outside_range', 'REMOVE_OUTSIDE_BOXES': True}, {'NAME': 'shuffle_points', 'SHUFFLE_ENABLED': {'train': True, 'test': False}}, {'NAME': 'transform_points_to_voxels', 'VOXEL_SIZE': [0.05, 0.05, 0.1], 'MAX_POINTS_PER_VOXEL': 5, 'MAX_NUMBER_OF_VOXELS': {'train': 16000, 'test': 40000}}]
+2022-01-29 11:00:25,806   INFO  cfg.DATA_CONFIG._BASE_CONFIG_: cfgs/dataset_configs/kitti_dataset.yaml
+2022-01-29 11:00:25,806   INFO  
+cfg.MODEL = edict()
+2022-01-29 11:00:25,806   INFO  cfg.MODEL.NAME: CenterPoint
+2022-01-29 11:00:25,806   INFO  
+cfg.MODEL.VFE = edict()
+2022-01-29 11:00:25,806   INFO  cfg.MODEL.VFE.NAME: MeanVFE
+2022-01-29 11:00:25,806   INFO  
+cfg.MODEL.BACKBONE_3D = edict()
+2022-01-29 11:00:25,806   INFO  cfg.MODEL.BACKBONE_3D.NAME: VoxelBackBone8x
+2022-01-29 11:00:25,806   INFO  
+cfg.MODEL.MAP_TO_BEV = edict()
+2022-01-29 11:00:25,806   INFO  cfg.MODEL.MAP_TO_BEV.NAME: HeightCompression
+2022-01-29 11:00:25,806   INFO  cfg.MODEL.MAP_TO_BEV.NUM_BEV_FEATURES: 256
+2022-01-29 11:00:25,806   INFO  
+cfg.MODEL.BACKBONE_2D = edict()
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.NAME: BaseBEVBackbone
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.LAYER_NUMS: [5]
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.LAYER_STRIDES: [1]
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.NUM_FILTERS: [128]
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.UPSAMPLE_STRIDES: [2]
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.BACKBONE_2D.NUM_UPSAMPLE_FILTERS: [256]
+2022-01-29 11:00:25,807   INFO  
+cfg.MODEL.DENSE_HEAD = edict()
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.DENSE_HEAD.NAME: CenterHead
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.DENSE_HEAD.CLASS_AGNOSTIC: False
+2022-01-29 11:00:25,807   INFO  cfg.MODEL.DENSE_HEAD.USE_DIRECTION_CLASSIFIER: False
+2022-01-29 11:00:25,808   INFO  
+cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG = edict()
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MAX_OBJS: 100
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.VOXEL_SIZE: [0.05, 0.05, 0.1]
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.OUT_SIZE_FACTOR: 4
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.GAUSSIAN_OVERLAP: 0.1
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.MIN_RADIUS: 2
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.TARGET_ASSIGNER_CONFIG.BOX_CODER: ResidualCoder
+2022-01-29 11:00:25,808   INFO  
+cfg.MODEL.DENSE_HEAD.LOSS_CONFIG = edict()
+2022-01-29 11:00:25,808   INFO  
+cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS = edict()
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.cls_weight: 1.0
+2022-01-29 11:00:25,808   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.loc_weight: 2.0
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.DENSE_HEAD.LOSS_CONFIG.LOSS_WEIGHTS.code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+2022-01-29 11:00:25,809   INFO  
+cfg.MODEL.POST_PROCESSING = edict()
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.RECALL_THRESH_LIST: [0.3, 0.5, 0.7]
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.SCORE_THRESH: 0.3
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.OUTPUT_RAW_SCORE: False
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.EVAL_METRIC: kitti
+2022-01-29 11:00:25,809   INFO  
+cfg.MODEL.POST_PROCESSING.NMS_CONFIG = edict()
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.MULTI_CLASSES_NMS: False
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_TYPE: nms_gpu
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_THRESH: 0.01
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_PRE_MAXSIZE: 4096
+2022-01-29 11:00:25,809   INFO  cfg.MODEL.POST_PROCESSING.NMS_CONFIG.NMS_POST_MAXSIZE: 500
+2022-01-29 11:00:25,810   INFO  
+cfg.OPTIMIZATION = edict()
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU: 8
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.NUM_EPOCHS: 80
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.OPTIMIZER: adam_onecycle
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.LR: 0.003
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.WEIGHT_DECAY: 0.01
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.MOMENTUM: 0.9
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.MOMS: [0.95, 0.85]
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.PCT_START: 0.4
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.DIV_FACTOR: 10
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.DECAY_STEP_LIST: [35, 45]
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.LR_DECAY: 0.1
+2022-01-29 11:00:25,810   INFO  cfg.OPTIMIZATION.LR_CLIP: 1e-07
+2022-01-29 11:00:25,811   INFO  cfg.OPTIMIZATION.LR_WARMUP: False
+2022-01-29 11:00:25,811   INFO  cfg.OPTIMIZATION.WARMUP_EPOCH: 1
+2022-01-29 11:00:25,811   INFO  cfg.OPTIMIZATION.GRAD_NORM_CLIP: 10
+2022-01-29 11:00:25,811   INFO  cfg.TAG: centerpoint
+2022-01-29 11:00:25,811   INFO  cfg.EXP_GROUP_PATH: home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models
+2022-01-29 11:00:25,898   INFO  Loading KITTI dataset
+2022-01-29 11:00:26,037   INFO  Total samples for KITTI dataset: 565
+2022-01-29 11:00:28,928   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030/0/checkpoint_epoch_65.pth to GPU
+2022-01-29 11:00:29,064   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+py13dceb4
+2022-01-29 11:00:29,189   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:00:29,189   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.weight: torch.Size([128])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.bias: torch.Size([128])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.weight: torch.Size([128])
+2022-01-29 11:00:29,190   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.bias: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.weight: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.bias: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,191   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,192   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,193   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,194   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,195   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,196   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,197   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.0.weight: torch.Size([128, 384, 1, 1])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.0.bias: torch.Size([128])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.1.weight: torch.Size([128])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.1.bias: torch.Size([128])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.1.running_mean: torch.Size([128])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.1.running_var: torch.Size([128])
+2022-01-29 11:00:29,198   INFO  Not updated weight backbone_2d.last_block.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:00:29,200   INFO  ==> Done (loaded 119/186)
+2022-01-29 11:00:29,209   INFO  *************** EPOCH 65 EVALUATION *****************
+2022-01-29 11:01:05,509   INFO  *************** Performance of EPOCH 65 *****************
+2022-01-29 11:01:05,510   INFO  Generate label finished(sec_per_example: 0.0642 second).
+2022-01-29 11:01:05,510   INFO  recall_rcnn_0.3: 0.001149
+2022-01-29 11:01:05,510   INFO  recall_rcnn_0.5: 0.000000
+2022-01-29 11:01:05,511   INFO  recall_rcnn_0.7: 0.000000
+2022-01-29 11:01:05,511   INFO  Average predicted number of objects(565 samples): 0.124
+2022-01-29 11:01:19,241   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:0.0000, 0.4785, 0.4785
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.22, 0.22
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Car AP@0.70, 0.50, 0.50:
+bbox AP:0.0000, 0.4785, 0.4785
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.22, 0.22
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+
+2022-01-29 11:01:19,242   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set15_bifpn[128]_WithSkip/epoch_65/val
+2022-01-29 11:01:19,242   INFO  ****************Evaluation done.*****************
+2022-01-29 11:01:19,255   INFO  Epoch 65 has been evaluated
+2022-01-29 11:01:19,255   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030/0/checkpoint_epoch_66.pth to GPU
+2022-01-29 11:01:19,397   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+py13dceb4
+2022-01-29 11:01:19,521   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:19,521   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.weight: torch.Size([128])
+2022-01-29 11:01:19,521   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.bias: torch.Size([128])
+2022-01-29 11:01:19,521   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,521   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.weight: torch.Size([128])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.bias: torch.Size([128])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,522   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.weight: torch.Size([128])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.bias: torch.Size([128])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,523   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,524   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,525   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,526   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,527   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,528   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:19,529   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.last_block.0.weight: torch.Size([128, 384, 1, 1])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.last_block.0.bias: torch.Size([128])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.last_block.1.weight: torch.Size([128])
+2022-01-29 11:01:19,530   INFO  Not updated weight backbone_2d.last_block.1.bias: torch.Size([128])
+2022-01-29 11:01:19,531   INFO  Not updated weight backbone_2d.last_block.1.running_mean: torch.Size([128])
+2022-01-29 11:01:19,531   INFO  Not updated weight backbone_2d.last_block.1.running_var: torch.Size([128])
+2022-01-29 11:01:19,531   INFO  Not updated weight backbone_2d.last_block.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:19,532   INFO  ==> Done (loaded 119/186)
+2022-01-29 11:01:19,534   INFO  *************** EPOCH 66 EVALUATION *****************
+2022-01-29 11:01:56,143   INFO  *************** Performance of EPOCH 66 *****************
+2022-01-29 11:01:56,144   INFO  Generate label finished(sec_per_example: 0.0648 second).
+2022-01-29 11:01:56,145   INFO  recall_rcnn_0.3: 0.001533
+2022-01-29 11:01:56,146   INFO  recall_rcnn_0.5: 0.000000
+2022-01-29 11:01:56,147   INFO  recall_rcnn_0.7: 0.000000
+2022-01-29 11:01:56,148   INFO  Average predicted number of objects(565 samples): 0.166
+2022-01-29 11:01:57,694   INFO  Car AP@0.70, 0.70, 0.70:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Car AP_R40@0.70, 0.70, 0.70:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Car AP@0.70, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Car AP_R40@0.70, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP_R40@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Pedestrian AP_R40@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP_R40@0.50, 0.50, 0.50:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+Cyclist AP_R40@0.50, 0.25, 0.25:
+bbox AP:0.0000, 0.0000, 0.0000
+bev  AP:0.0000, 0.0000, 0.0000
+3d   AP:0.0000, 0.0000, 0.0000
+aos  AP:0.00, 0.00, 0.00
+
+2022-01-29 11:01:57,694   INFO  Result is save to /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/eval/eval_all_default/default/_batch4_set15_bifpn[128]_WithSkip/epoch_66/val
+2022-01-29 11:01:57,694   INFO  ****************Evaluation done.*****************
+2022-01-29 11:01:57,709   INFO  Epoch 66 has been evaluated
+2022-01-29 11:01:57,710   INFO  ==> Loading parameters from checkpoint /home/koraykoca34/CenterPoint-KITTI/output/home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint/default/ckpt/batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030/0/checkpoint_epoch_67.pth to GPU
+2022-01-29 11:01:57,853   INFO  ==> Checkpoint trained from version: pcdet+0.3.0+e2da8c0+py13dceb4
+2022-01-29 11:01:57,978   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.weight: torch.Size([128])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.bias: torch.Size([128])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.0.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:57,979   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.weight: torch.Size([128])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.bias: torch.Size([128])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.1.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.0.weight: torch.Size([128, 128, 1, 1])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.weight: torch.Size([128])
+2022-01-29 11:01:57,980   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.bias: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.final_convs.0.2.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,981   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p5_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,982   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_td_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,983   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p4_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,984   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_inp_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.0.weight: torch.Size([128, 128, 3, 3])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.weight: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.bias: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.bifpn.layers.0.p3_out_conv.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.last_block.0.weight: torch.Size([128, 384, 1, 1])
+2022-01-29 11:01:57,985   INFO  Not updated weight backbone_2d.last_block.0.bias: torch.Size([128])
+2022-01-29 11:01:57,986   INFO  Not updated weight backbone_2d.last_block.1.weight: torch.Size([128])
+2022-01-29 11:01:57,986   INFO  Not updated weight backbone_2d.last_block.1.bias: torch.Size([128])
+2022-01-29 11:01:57,986   INFO  Not updated weight backbone_2d.last_block.1.running_mean: torch.Size([128])
+2022-01-29 11:01:57,986   INFO  Not updated weight backbone_2d.last_block.1.running_var: torch.Size([128])
+2022-01-29 11:01:57,986   INFO  Not updated weight backbone_2d.last_block.1.num_batches_tracked: torch.Size([])
+2022-01-29 11:01:57,987   INFO  ==> Done (loaded 119/186)
+2022-01-29 11:01:57,990   INFO  *************** EPOCH 67 EVALUATION *****************

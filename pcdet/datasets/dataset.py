@@ -11,7 +11,7 @@ from .processor.point_feature_encoder import PointFeatureEncoder
 
 
 class DatasetTemplate(torch_data.Dataset):
-    def __init__(self, dataset_cfg=None, class_names=None, training=True, root_path=None, logger=None):
+    def __init__(self, dataset_cfg=None, class_names=None, training=True, root_path=None, logger=None, **kwargs):
         super().__init__()
         self.dataset_cfg = dataset_cfg
         self.training = training

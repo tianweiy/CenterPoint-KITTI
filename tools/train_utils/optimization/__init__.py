@@ -18,7 +18,7 @@ def build_optimizer(model, optim_cfg):
         )
     elif optim_cfg.OPTIMIZER == 'adam_onecycle':
         def children(m: nn.Module):
-            return list(m.children())
+            return list(m.children()) 
 
         def num_children(m: nn.Module) -> int:
             return len(children(m))
