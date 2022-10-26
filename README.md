@@ -17,7 +17,9 @@
       year={2021},
     }
 
-This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScenes and Waymo, please refer to the [original repo](https://github.com/tianweiy/CenterPoint). Please refer to [INSTALL.md](docs/INSTALL.md) for installation. We provide two configs, [centerpoint.yaml](tools/cfgs/kitti_models/centerpoint.yaml) for the vanilla centerpoint model and [centerpoint_rcnn.yaml](tools/cfgs/kitti_models/centerpoint_rcnn.yaml) which combines centerpoint with PVRCNN. Pretrained models are coming soon. 
+**CenterPoint is also implemented in the official [OpenPCDet repo](https://github.com/open-mmlab/OpenPCDet) and can reproduce results on nuScenes and Waymo**. 
+
+This repo is an reimplementation of CenterPoint on the KITTI dataset. For nuScenes and Waymo, please refer to the [original repo](https://github.com/tianweiy/CenterPoint). Please refer to [INSTALL.md](docs/INSTALL.md) for installation. We provide two configs, [centerpoint.yaml](tools/cfgs/kitti_models/centerpoint.yaml) for the vanilla centerpoint model and [centerpoint_rcnn.yaml](tools/cfgs/kitti_models/centerpoint_rcnn.yaml) which combines centerpoint with PVRCNN. 
 
 
 ## Acknowledgement
