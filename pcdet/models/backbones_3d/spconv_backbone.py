@@ -2,6 +2,7 @@ from functools import partial
 
 import spconv
 import torch.nn as nn
+import torch
 
 
 def post_act_block(in_channels, out_channels, kernel_size, indice_key=None, stride=1, padding=0,
@@ -63,12 +64,15 @@ class SparseBasicBlock(spconv.SparseModule):
         out.features = self.relu(out.features)
 
         return out
-
-
+        
+        
 class VoxelBackBone8x(nn.Module):
     def __init__(self, model_cfg, input_channels, grid_size, **kwargs):
         super().__init__()
         self.model_cfg = model_cfg
+        self.input_channels = input_channels
+        self.grid_size = grid_size
+        self.kwargs = kwargs
         norm_fn = partial(nn.BatchNorm1d, eps=1e-3, momentum=0.01)
 
         self.sparse_shape = grid_size[::-1] + [1, 0, 0]
@@ -114,8 +118,11 @@ class VoxelBackBone8x(nn.Module):
             norm_fn(128),
             nn.ReLU(),
         )
+
         self.num_point_features = 128
 
+        
+  
     def forward(self, batch_dict):
         """
         Args:
@@ -142,10 +149,12 @@ class VoxelBackBone8x(nn.Module):
         x_conv2 = self.conv2(x_conv1)
         x_conv3 = self.conv3(x_conv2)
         x_conv4 = self.conv4(x_conv3)
+    
 
         # for detection head
         # [200, 176, 5] -> [200, 176, 2]
         out = self.conv_out(x_conv4)
+    
 
         batch_dict.update({
             'encoded_spconv_tensor': out,

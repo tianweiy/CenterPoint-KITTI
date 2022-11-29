@@ -1,0 +1,60 @@
+alias gs="git status"
+alias gsh="git status show"
+alias gd="git diff"
+alias gc="git commit -m"
+alias gpush="git push origin HEAD"
+alias gpushd="git push origin Dan"
+alias ga="git add"
+alias gtrack="git branch -u"
+alias gb="git branch"
+alias br="code ~/.bashrc"
+alias sbr="source ~/.bashrc"
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+function vncnewthing() {
+  host myip.opendns.com resolver1.opendns.com
+  vnc -kill :1
+  vnc -kill :2
+  vnc -kill :3
+  vncnew
+  export DISPLAY=:1
+}
+
+
+alias vnc="vncserver"
+alias vncnew="vncserver -localhost no"
+alias vnckill="vnc -kill :"
+alias vncn=vncnewthing
+
+alias cac="source /opt/conda/bin/activate cpkitti1"
+alias ll="ls -l -hs"
+alias tmux="tmux -2"
+alias tmuxa="tmux attach -t"
+alias tmuxl="tmux list-sessions"
+
+
+# Centerpoint aliases:
+alias permission="sudo chmod -R 777 /home/koraykoca34"
+alias ctrain="cd /home/koraykoca34/CenterPoint-KITTI && sudo rm -rf output && cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python /home/koraykoca34/CenterPoint-KITTI/tools/train.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml"
+alias train="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python /home/koraykoca34/CenterPoint-KITTI/tools/train.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml --workers 4"
+alias demo="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools && \ 
+    python demo.py --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint_rcnn.yaml \
+    --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoints/checkpoint_epoch_80.pth \
+    --data_path /home/koraykoca34/CenterPoint-KITTI/data/kitti/training/velodyne/000002.bin"
+alias testcp="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools &&  \
+    python /home/koraykoca34/CenterPoint-KITTI/tools/test.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml --ckpt /home/koraykoca34/CenterPoint-KITTI/tools/checkpoint_epoch_80.pth"
+
+alias eval="cac && \
+    cd /home/koraykoca34/CenterPoint-KITTI/tools &&  \
+    python /home/koraykoca34/CenterPoint-KITTI/tools/test.py \
+    --cfg_file /home/koraykoca34/CenterPoint-KITTI/tools/cfgs/kitti_models/centerpoint.yaml --batch_size 4 --workers 4 --eval_all"

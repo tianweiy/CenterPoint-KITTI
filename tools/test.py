@@ -16,7 +16,6 @@ from pcdet.datasets import build_dataloader
 from pcdet.models import build_network
 from pcdet.utils import common_utils
 
-
 def parse_config():
     parser = argparse.ArgumentParser(description='arg parser')
     parser.add_argument('--cfg_file', type=str, default=None, help='specify the config for training')
@@ -37,6 +36,10 @@ def parse_config():
     parser.add_argument('--eval_all', action='store_true', default=False, help='whether to evaluate all checkpoints')
     parser.add_argument('--ckpt_dir', type=str, default=None, help='specify a ckpt directory to be evaluated if needed')
     parser.add_argument('--save_to_file', action='store_true', default=False, help='')
+    parser.add_argument('--set_size', type=int, default=None, help='Set percentage of dataset usage for training')
+    parser.add_argument('--bifpn', type=int, nargs='*', default=[], help='<Required> Set number of bifpn blocks')
+    parser.add_argument('--bifpn_skip', dest='bifpn_skip', action='store_true', help='Use skip connections with BiFPN blocks')
+    parser.add_argument('--ckpt_start', type=int,  default=-1, help='From which ckpt to start')
 
     args = parser.parse_args()
 
@@ -51,6 +54,25 @@ def parse_config():
 
     return args, cfg
 
+def find_next_folder_name(arr):
+    """
+    For saving the relevant checkpoints and tensorboard graphs, we need to distinguish between the different runs.
+    Args:
+        arr ([strings]): [An array of the all the existing runs under a specific configutrtion. For example, a run could be
+        batch4_epochs80_set100.0_bipfn[]_NoSkip_lr0.00030, and under this folder could be many runs, to examine different hyparamters changes,
+        that are not listed in the name. Thus, we could have subfolders 0, 1, 2.... for each individula run. This way we do not OVERRIDE the existing
+        runs.]
+    Returns:
+        [int]: [Next possible run index.]
+    """    
+    n = len(arr)
+    exsits  = {int(arr[i]) for i in range(n) if arr[i].isdigit()}
+    for i in range(n):
+        if i not in exsits:
+            n = i
+            break
+    return str(n)
+
 
 def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=False):
     # load checkpoint
@@ -63,10 +85,10 @@ def eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id
         result_dir=eval_output_dir, save_to_file=args.save_to_file
     )
 
-
 def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
-    ckpt_list = glob.glob(os.path.join(ckpt_dir, '*checkpoint_epoch_*.pth'))
-    ckpt_list.sort(key=os.path.getmtime)
+    ckpt_list = os.listdir(ckpt_dir)
+    ckpt_list = [os.path.join(ckpt_dir, x)  for x in ckpt_list]
+
     evaluated_ckpt_list = [float(x.strip()) for x in open(ckpt_record_file, 'r').readlines()]
 
     for cur_ckpt in ckpt_list:
@@ -85,32 +107,27 @@ def get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args):
 def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=False):
     # evaluated ckpt record
     ckpt_record_file = eval_output_dir / ('eval_list_%s.txt' % cfg.DATA_CONFIG.DATA_SPLIT['test'])
+
+    ckpt_list = os.listdir(ckpt_dir)
+    ckpt_list = [os.path.join(ckpt_dir, x)  for x in ckpt_list]
+    ckpt_list = sorted(ckpt_list, key=lambda c: int(c.split(".pth")[0].split("_")[-1]))  # Sort the checkpoints
     with open(ckpt_record_file, 'a'):
         pass
 
+    # print(ckpt_list)
     # tensorboard log
+
+    curr_folder = str("_batch" + str(args.batch_size) + "_set" + str(args.set_size) + "_bifpn" + str(args.bifpn) + str("_WithSkip" if args.bifpn_skip else "_NoSkip" + "_lr" + "{:.5f}".format(cfg.OPTIMIZATION.LR / cfg.OPTIMIZATION.DIV_FACTOR)))
+    eval_output_dir = eval_output_dir / curr_folder / find_next_folder_name(os.listdir(eval_output_dir))
     if cfg.LOCAL_RANK == 0:
         tb_log = SummaryWriter(log_dir=str(eval_output_dir / ('tensorboard_%s' % cfg.DATA_CONFIG.DATA_SPLIT['test'])))
-    total_time = 0
-    first_eval = True
 
-    while True:
-        # check whether there is checkpoint which is not evaluated
-        cur_epoch_id, cur_ckpt = get_no_evaluated_ckpt(ckpt_dir, ckpt_record_file, args)
-        if cur_epoch_id == -1 or int(float(cur_epoch_id)) < args.start_epoch:
-            wait_second = 30
-            if cfg.LOCAL_RANK == 0:
-                print('Wait %s seconds for next check (progress: %.1f / %d minutes): %s \r'
-                      % (wait_second, total_time * 1.0 / 60, args.max_waiting_mins, ckpt_dir), end='', flush=True)
-            time.sleep(wait_second)
-            total_time += 30
-            if total_time > args.max_waiting_mins * 60 and (first_eval is False):
-                break
-            continue
+    first =  int(ckpt_list[0].split(".pth")[0].split("_")[-1])
+    print(first, len(ckpt_list), args.ckpt_start)
+    for i, cur_ckpt in enumerate(ckpt_list[args.ckpt_start - first:]):
 
-        total_time = 0
-        first_eval = False
-
+        cur_epoch_id = i + args.ckpt_start
+        # if i % 2 == 1:
         model.load_params_from_file(filename=cur_ckpt, logger=logger, to_cpu=dist_test)
         model.cuda()
 
@@ -120,6 +137,7 @@ def repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir
             cfg, model, test_loader, cur_epoch_id, logger, dist_test=dist_test,
             result_dir=cur_result_dir, save_to_file=args.save_to_file
         )
+
 
         if cfg.LOCAL_RANK == 0:
             for key, val in tb_dict.items():
@@ -141,6 +159,9 @@ def main():
             args.tcp_port, args.local_rank, backend='nccl'
         )
         dist_test = True
+    
+    assert args.ckpt_start >= 0, "You must specify a ckpt number to start from --> e.g. --ckpt_start 100"
+        
 
     if args.batch_size is None:
         args.batch_size = cfg.OPTIMIZATION.BATCH_SIZE_PER_GPU
@@ -184,12 +205,16 @@ def main():
         dataset_cfg=cfg.DATA_CONFIG,
         class_names=cfg.CLASS_NAMES,
         batch_size=args.batch_size,
-        dist=dist_test, workers=args.workers, logger=logger, training=False
+        dist=dist_test, workers=args.workers, logger=logger, training=False,
+        set_size_percentage=args.set_size,
+        bifpn=args.bifpn,
+        bifpn_skip=args.bifpn_skip,
     )
-
+    
     model = build_network(model_cfg=cfg.MODEL, num_class=len(cfg.CLASS_NAMES), dataset=test_set)
     with torch.no_grad():
         if args.eval_all:
+           
             repeat_eval_ckpt(model, test_loader, args, eval_output_dir, logger, ckpt_dir, dist_test=dist_test)
         else:
             eval_single_ckpt(model, test_loader, args, eval_output_dir, logger, epoch_id, dist_test=dist_test)
